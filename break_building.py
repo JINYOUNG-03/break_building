@@ -60,6 +60,7 @@ def reset_world():
 
     global current_screen
     current_screen = start
+    world.append(current_screen)
 
     global character
     character = Character()
@@ -89,16 +90,18 @@ while running:
                 running = False
             else:
                 if current_screen == start:
-                    current_screen = menu
-                    world.append(current_screen)
-                if current_screen == menu:
                     if event.key == SDLK_s:
                         world.clear()
-                        current_screen = start
+                        current_screen = menu
+                        world.append(current_screen)
+                if current_screen == menu:
+                    if event.key == SDLK_k:
+                        world.clear()
+                        current_screen = gamestart #게임 화면 구현해야함
                         world.append(current_screen)
 
     update_world()
     render_world()
-    delay(0.05)
+    delay(0.1)
 
 close_canvas()
