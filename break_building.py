@@ -1,11 +1,11 @@
 from pico2d import *
 
-#1080,1920 해상도을 하고 싶은데 노트북이 작아서 안보임 일단 /2로 줄여서 작업
+#608,1080해상도
 
 class Start:
     def __init__(self):
         self.start_img = load_image('C:/3dp/break_building/10.resource/start_screen_main.png')
-        self.x, self.y = 540/2, 960/2
+        self.x, self.y = 608/2, 1080/2
         self.active =True
     def update(self):
         pass
@@ -20,9 +20,14 @@ class Start:
 
 class GameMenu:
     def __init__(self):
-        self.menu_img = load_image('C:\3dp\break_building\10.resource/menu.png')
-        self.x, self.y = 540/2, 960/2
+        self.menu_img = load_image('10.resource/menu.png')
+        self.x, self.y = 608/2, 1080/2
         self.active = False
+    def update(self):
+        pass
+    def draw(self):
+        self.menu_img.draw(self.x, self.y)
+
 
 def reset_world():
     global running
@@ -39,6 +44,15 @@ def reset_world():
     screen = start
     world.append(screen)
 
+    global menu
+    menu = GameMenu()
+    world.append(menu)
+
+    global current_screen
+    current_screen = start
+
+    world.append(current_screen)
+
 
 
 
@@ -53,7 +67,7 @@ def render_world():
         object.draw()
     update_canvas()
 
-open_canvas(540,960)
+open_canvas(608,1080)
 reset_world()
 
 while running:
