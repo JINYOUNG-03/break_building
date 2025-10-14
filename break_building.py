@@ -1,12 +1,12 @@
 from pico2d import *
 
-#608,1080해상도
+#540,960해상도
 
 class Start:
     def __init__(self):
-        self.start_img = load_image('C:/3dp/break_building/10.resource/start_screen_main.png')
-        self.x, self.y = 608/2, 1080/2
-        self.active =True
+        self.start_img = load_image('10.resource/start_screen_main.png')
+        self.x, self.y = 540/2, 960/2
+        self.active = True
     def update(self):
         pass
     def draw(self):
@@ -21,13 +21,23 @@ class Start:
 class GameMenu:
     def __init__(self):
         self.menu_img = load_image('10.resource/menu.png')
-        self.x, self.y = 608/2, 1080/2
+        self.x, self.y = 540/2, 960/2
         self.active = False
     def update(self):
         pass
     def draw(self):
         self.menu_img.draw(self.x, self.y)
 
+class Character:
+    def __init__(self):
+        self.char_img = [load_image(f'10.resource/Char1_1_idle_{i+1}.png') for i in range(4)]
+        self.x, self.y = 540/2, 120 #270에 120이 딱 바닥임
+        self.frame = 0
+    def update(self):
+        self.frame = (self.frame + 1) % 4 #프레임이 4개라서 0~3
+        pass
+    def draw(self):
+        self.char_img[self.frame].draw(self.x, self.y)
 
 def reset_world():
     global running
@@ -51,10 +61,9 @@ def reset_world():
     global current_screen
     current_screen = start
 
-    world.append(current_screen)
-
-
-
+    global character
+    character = Character()
+    world.append(character)
 
 def update_world():
     for object in world:
@@ -67,7 +76,7 @@ def render_world():
         object.draw()
     update_canvas()
 
-open_canvas(608,1080)
+open_canvas(540, 960)
 reset_world()
 
 while running:
@@ -80,9 +89,14 @@ while running:
                 running = False
             else:
                 if current_screen == start:
-                    world.clear()
                     current_screen = menu
                     world.append(current_screen)
+                if current_screen == menu:
+                    if event.key == SDLK_s:
+                        world.clear()
+                        current_screen = start
+                        world.append(current_screen)
+
     update_world()
     render_world()
     delay(0.05)
