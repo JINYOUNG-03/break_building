@@ -28,6 +28,16 @@ class GameMenu:
     def draw(self):
         self.menu_img.draw(self.x, self.y)
 
+class GameStart:
+    def __init__(self):
+        self.gamestart_img = load_image('10.resource/Background_02.png')
+        self.x, self.y = 540/2, 960/2
+        self.active = False
+    def update(self):
+        pass
+    def draw(self):
+        self.gamestart_img.draw(self.x, self.y)
+
 class Character:
     def __init__(self):
         self.char_img = [load_image(f'10.resource/Char1_1_idle_{i+1}.png') for i in range(4)]
@@ -40,31 +50,14 @@ class Character:
         self.char_img[self.frame].draw(self.x, self.y)
 
 def reset_world():
-    global running
+    global running, start, menu, gamestart, character, current_screen, world
     running = True
-
-    global world
-    world = []
-
-    global start
     start = Start()
-    world.append(start)
-
-    global screen
-    screen = start
-    world.append(screen)
-
-    global menu
     menu = GameMenu()
-    world.append(menu)
-
-    global current_screen
-    current_screen = start
-    world.append(current_screen)
-
-    global character
+    gamestart = GameStart()
     character = Character()
-    world.append(character)
+    current_screen = start
+    world = [current_screen, character]
 
 def update_world():
     for object in world:
@@ -88,17 +81,15 @@ while running:
         elif event.type == SDL_KEYDOWN:
             if event.key == SDLK_ESCAPE:
                 running = False
-            else:
-                if current_screen == start:
-                    if event.key == SDLK_s:
-                        world.clear()
-                        current_screen = menu
-                        world.append(current_screen)
-                if current_screen == menu:
-                    if event.key == SDLK_k:
-                        world.clear()
-                        current_screen = gamestart #게임 화면 구현해야함
-                        world.append(current_screen)
+            elif current_screen == start and event.key == SDLK_s:
+                current_screen = menu
+                world = [current_screen, character]
+            elif current_screen == menu and event.key == SDLK_k:
+                current_screen = gamestart
+                world = [current_screen, character]
+            elif current_screen == gamestart and event.key == SDLK_r:
+                current_screen = start
+                world = [current_screen, character]
 
     update_world()
     render_world()
