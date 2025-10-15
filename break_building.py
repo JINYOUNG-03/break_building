@@ -81,10 +81,10 @@ while running:
         elif event.type == SDL_KEYDOWN:
             if event.key == SDLK_ESCAPE:
                 running = False
-            elif current_screen == start and event.key == SDLK_s:
+            elif current_screen == start and event.key == SDLK_m:
                 current_screen = menu
                 world = [current_screen]
-            elif current_screen == menu and event.key == SDLK_k:
+            elif current_screen == menu and event.key == SDLK_s:
                 current_screen = gamestart
                 world = [current_screen,character]
             elif current_screen == gamestart and event.key == SDLK_r:
@@ -93,6 +93,6 @@ while running:
 
     update_world()
     render_world()
-    delay(0.1)
+    delay(0.01)
 
 close_canvas()
