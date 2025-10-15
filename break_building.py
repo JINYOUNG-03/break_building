@@ -57,7 +57,7 @@ def reset_world():
     gamestart = GameStart()
     character = Character()
     current_screen = start
-    world = [current_screen, character]
+    world = [current_screen]
 
 def update_world():
     for object in world:
@@ -83,13 +83,13 @@ while running:
                 running = False
             elif current_screen == start and event.key == SDLK_s:
                 current_screen = menu
-                world = [current_screen, character]
+                world = [current_screen]
             elif current_screen == menu and event.key == SDLK_k:
                 current_screen = gamestart
-                world = [current_screen, character]
+                world = [current_screen,character]
             elif current_screen == gamestart and event.key == SDLK_r:
                 current_screen = start
-                world = [current_screen, character]
+                world = [current_screen]
 
     update_world()
     render_world()
