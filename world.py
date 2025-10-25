@@ -13,9 +13,12 @@ def reset_world():
     current_screen = start
     world = [current_screen]
 from pico2d import *
-def update_world():
+def update_world(dt):
     for obj in world:
-        obj.update()
+        try:
+            obj.update(dt)
+        except TypeError:
+            obj.update()
 
 def render_world():
     clear_canvas()
