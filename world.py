@@ -63,3 +63,8 @@ def handle_events():
             elif current_screen == gamestart and event.key == SDLK_r:
                 current_screen = start
                 world = [current_screen]
+            elif current_screen == gamestart:
+                if event.key in (SDLK_LEFT, SDLK_a):
+                    character.move_left()
+                elif event.key in (SDLK_RIGHT, SDLK_d):
+                    character.move_right()
