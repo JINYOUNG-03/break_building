@@ -9,11 +9,8 @@ class Building:
         self.falling = False
         self.w = 540
         self.h = 50
-        try:
-            self.image = load_image('4.background/building/건물 png 파일/Building1.png')
-        except Exception as e:
-            print(f"빌딩 이미지 로드 실패: {e}")
-            self.image = None
+        self.image = load_image('10.resource/building_1.png')
+
 
     def start_fall(self):
         self.falling = True
@@ -42,7 +39,7 @@ class Building:
 
 
 class BuildingManager:
-    def __init__(self, spawn_interval=1.5, spawn_x=270, spawn_y=1000, fall_speed=200.0, screen_bottom=0):
+    def __init__(self, spawn_interval=1.0, spawn_x=270, spawn_y=1000, fall_speed=200.0, screen_bottom=0):
         self.spawn_interval = spawn_interval
         self.spawn_timer = 0.0
         self.spawn_x = spawn_x
