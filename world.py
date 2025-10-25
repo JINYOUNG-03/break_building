@@ -68,3 +68,5 @@ def handle_events():
                     character.move_left()
                 elif event.key in (SDLK_RIGHT, SDLK_d):
                     character.move_right()
+                elif event.key in (SDLK_SPACE, SDLK_w, SDLK_UP):
+                    character.jump()
