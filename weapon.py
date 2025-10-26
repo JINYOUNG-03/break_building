@@ -3,11 +3,11 @@ from pico2d import *
 class Weapon:
     def __init__(self):
         self.weapon_img = load_image(f'10.resource/1. Basic.png')
-        self.x, self.y = 254, 131
-        self.active = False
+        self.x, self.y = 254,175
+        self.w, self.h = 24,100
 
-    def update(self):
+    def update(self,dt):
         pass
 
     def draw(self):
-        self.weapon_img.draw(self.x, self.y)
+        self.weapon_img.draw(self.x, self.y,self.w, self.h)
