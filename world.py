@@ -5,7 +5,7 @@ from start import Start
 from menu import GameMenu
 from gamestart import GameStart
 from character import Character
-
+SCREEN_H=960
 # 전역 상태들
 running = False
 start_screen = None
@@ -110,3 +110,15 @@ def handle_events():
                     manual_spawn_building()
                 continue
             # 다른 화면에서 처리할 키가 있으면 여기 추가
+        if event.type == SDL_MOUSEBUTTONDOWN:
+            x, y = event.x, SCREEN_H - event.y
+            print(f"Mouse down: ({x}, {y})")
+        elif event.type == SDL_MOUSEBUTTONUP:
+            x, y = event.x, SCREEN_H - event.y
+            print(f"Mouse up: ({x}, {y})")
+        elif event.type == SDL_MOUSEMOTION:
+            x, y = event.x, SCREEN_H - event.y
+            print(f"Mouse move: ({x}, {y})")
+            # 마우스 처리
+
+
