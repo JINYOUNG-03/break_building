@@ -26,6 +26,7 @@ def reset_world():
     menu = GameMenu()
     gamestart = GameStart()
     character = Character()
+    weapon = Weapon()
     current_screen = start_screen
     world = [current_screen]
     buildings = []
@@ -92,7 +93,7 @@ def handle_events():
                 continue
             if current_screen == menu and event.key == SDLK_s:
                 current_screen = gamestart
-                world = [current_screen, character]
+                world = [current_screen, character,weapon]
                 # gamestart로 진입하면 빌딩 낙하 시작
                 start_all_buildings()
                 continue
