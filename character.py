@@ -1,5 +1,8 @@
 from pico2d import *
+import shared_state
 
+width= 45
+height=80
 class Character:
     def __init__(self):
         self.char_img = [load_image(f'10.resource/Char1_1_idle_{i+1}.png') for i in range(4)]
@@ -56,6 +59,7 @@ class Character:
 
     def update(self, dt: float):
         # 좌우 이동
+        shared_state.set_pos(self.x-width, self.y + height/2)
         if self.x != self.target_x:
             direction = 1 if self.target_x > self.x else -1
             step = self.move_speed * dt
