@@ -5,6 +5,8 @@ from start import Start
 from menu import GameMenu
 from gamestart import GameStart
 from character import Character
+from weapon import Weapon
+
 SCREEN_H=960
 # 전역 상태들
 running = False
@@ -18,7 +20,7 @@ buildings = []
 building_manager = None
 
 def reset_world():
-    global running, start_screen, menu, gamestart, character, current_screen, world, buildings, building_manager
+    global running, start_screen, menu, gamestart, character, current_screen, world, buildings, building_manager,weapon
     running = True
     start_screen = Start()
     menu = GameMenu()
