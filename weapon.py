@@ -34,7 +34,7 @@ class Weapon:
         # 애니메이션 제어
         self.frame = 0
         self.anim_acc = 0.0
-        self.anim_fps = 20.0
+        self.anim_fps = 30.0
         self.frame_time = 1.0 / self.anim_fps
 
         # 상태 관리
@@ -87,24 +87,19 @@ class Weapon:
         if self.owner and hasattr(self.owner, 'state'):
             # 캐릭터의 공격 방향 먼저 동기화
             if hasattr(self.owner, 'attack_direction'):
-                old_weapon_direction = self.attack_direction
                 self.attack_direction = self.owner.attack_direction
-                if old_weapon_direction != self.attack_direction:
-                    print(f"Weapon direction synced: {old_weapon_direction} -> {self.attack_direction}")  # 디버깅용
 
             if self.owner.state != self.state:
                 self.set_state(self.owner.state)
-                print(f"Weapon state changed to: {self.state}, direction: {self.attack_direction}")  # 디버깅용
 
-        # 위치 동기화: 상태에 따라 다른 위치 계산
-        if self.state == 'idle':
-            # idle 상태: 캐릭터 팔 위치에 작은 오프셋
-            self.x = shared_state.x + self.idle_offset_x
-            self.y = shared_state.y + self.idle_offset_y
-        else:
-            # attack/defense 상태: 캐릭터 중심 기준 (애니메이션 이미지가 중심에서 그려짐)
-            self.x = shared_state.x + 50  # 캐릭터 중심에서 약간 오른쪽
-            self.y = shared_state.y + 30
+            # 위치 동기화: owner의 실제 좌표 사용
+            owner_x = self.owner.x
+            owner_y = self.owner.y
+
+            if self.state == 'idle':
+                # idle 상태: 캐릭터 중심에서 약간 오른쪽 (손 위치)
+                self.x = owner_x - 15
+                self.y = owner_y + 35   # 위로 올림
 
         # 애니메이션 재생 중일 때만 프레임 업데이트
         if self.is_playing and self.total_frames > 0:
