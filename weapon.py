@@ -12,7 +12,9 @@ class Weapon:
             load_image('10.resource/attack_re_02.png'),
             load_image('10.resource/attack_re_03.png'),
             load_image('10.resource/attack_re_04.png'),
-            load_image('10.resource/attack_re_05.png')
+            load_image('10.resource/attack_re_05.png'),
+            load_image('10.resource/attack_re_06.png'),
+            load_image('10.resource/attack_re_07.png')
         ]
 
         self.defense_img = [load_image('10.resource/1. Basic.png')]
@@ -89,7 +91,7 @@ class Weapon:
         else:
             # attack/defense 상태: 캐릭터 중심 기준 (애니메이션 이미지가 중심에서 그려짐)
             self.x = shared_state.x + 50  # 캐릭터 중심에서 약간 오른쪽
-            self.y = shared_state.y + 50  # 캐릭터 중심에서 약간 위
+            self.y = shared_state.y + 30
 
         # 애니메이션 재생 중일 때만 프레임 업데이트
         if self.is_playing and self.total_frames > 0:
