@@ -33,7 +33,7 @@ class Weapon:
         # 애니메이션 제어
         self.frame = 0
         self.anim_acc = 0.0
-        self.anim_fps = 12.0
+        self.anim_fps = 18.0
         self.frame_time = 1.0 / self.anim_fps
 
         # 상태 관리
