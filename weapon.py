@@ -8,14 +8,16 @@ class Weapon:
         self.idle_img = [load_image('10.resource/1. Basic.png')]
 
         # attack: 공격 애니메이션 프레임들
-        # 왼쪽→오른쪽 (02~07)
         self.attack_left_to_right = [
             load_image('10.resource/attack_re_02.png'),
             load_image('10.resource/attack_re_03.png'),
             load_image('10.resource/attack_re_04.png'),
-            load_image('10.resource/attack_re_05.png'),
-            load_image('10.resource/attack_re_06.png'),
-            load_image('10.resource/attack_re_07.png')
+        ]
+
+        self.attack_right_to_left = [
+            load_image('10.resource/attack_re_07.png'),
+            load_image('10.resource/attack_re_08.png'),
+            load_image('10.resource/attack_re_09.png')
         ]
 
         self.defense_img = [load_image('10.resource/1. Basic.png')]
@@ -27,7 +29,8 @@ class Weapon:
         self.idle_w, self.idle_h = 24, 100
 
         # attack/defense 상태에서 큰 애니메이션 크기
-        self.anim_w, self.anim_h = 300, 200  # y축을 줄여서 캐릭터 크기에 맞춤
+        # 원본 비율 550x330을 유지하면서 적당한 크기로 스케일링
+        self.anim_w, self.anim_h = 330, 198  # 550:330 비율 유지 (0.6배)
 
         self.x, self.y = shared_state.x, shared_state.y
 
@@ -96,13 +99,28 @@ class Weapon:
             owner_x = self.owner.x
             owner_y = self.owner.y
 
-            if self.state == 'idle':
-                # idle 상태: 캐릭터 중심에서 약간 오른쪽 (손 위치)
-                self.x = owner_x - 15
-                self.y = owner_y + 35   # 위로 올림
+            self.x = owner_x - 15
+            self.y = owner_y + 30
 
-        # 애니메이션 재생 중일 때만 프레임 업데이트
-        if self.is_playing and self.total_frames > 0:
+            # 공격 상태일 때 캐릭터 프레임과 완벽하게 동기화
+            if self.state == 'attack' and hasattr(self.owner, 'action_frame'):
+                # 캐릭터의 현재 방향에 따라 사용할 이미지 결정
+                if self.attack_direction == 'left_to_right':
+                    char_attack_img = self.owner.attack_left_to_right
+                else:
+                    char_attack_img = self.owner.attack_right_to_left
+
+                # 캐릭터의 프레임 진행도 계산 (0~1 사이)
+                char_total_frames = len(char_attack_img)
+                char_progress = self.owner.action_frame / char_total_frames
+
+                # 무기 프레임을 캐릭터 진행도에 맞춰 설정
+                self.frame = int(char_progress * self.total_frames)
+                if self.frame >= self.total_frames:
+                    self.frame = self.total_frames - 1
+
+        # 애니메이션 재생 (attack 상태가 아닐 때만 자동 진행)
+        if self.is_playing and self.total_frames > 0 and self.state != 'attack':
             self.anim_acc += dt
             while self.anim_acc >= self.frame_time:
                 self.frame += 1
@@ -114,7 +132,7 @@ class Weapon:
                         # idle은 반복
                         self.frame = 0
                     else:
-                        # attack/defense는 끝나면 idle로 돌아감 (방향 전환은 캐릭터가 담당)
+                        # attack/defense는 끝나면 idle로 돌아감
                         self.frame = self.total_frames - 1
                         self.set_state('idle')
 

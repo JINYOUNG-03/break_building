@@ -7,7 +7,6 @@ class Character:
     def __init__(self):
         self.char_img = [load_image(f'10.resource/Char1_1_idle_{i+1}.png') for i in range(4)]
         self.jump_img = [load_image(f'10.resource/Char1_1_jump_{i+1}.png') for i in range(3)]
-        self.attack_img = [load_image(f'10.resource/Char1_1_attack_0{i+1}.png') for i in range(4)]
         self.defense_img = [load_image('10.resource/Char1_1_def.png')]
 
         self.x, self.y = 540 / 2, 140
@@ -42,8 +41,19 @@ class Character:
         self.action_frame_time = 1.0 / self.action_fps
 
         # 공격 방향 관리 (와이퍼처럼 번갈아가며)
-        self.attack_direction = 'left_to_right'  # 'left_to_right' 또는 'right_to_left'
+        self.attack_direction = 'left_to_right'  # 'left_to_right' 또는 'right_to_left
 
+        self.attack_left_to_right = [
+            load_image('10.resource/Char1_1_attack_01.png'),
+            load_image('10.resource/Char1_1_attack_02.png'),
+            load_image('10.resource/Char1_1_attack_04.png'),
+        ]
+
+        self.attack_right_to_left = [
+            load_image('10.resource/Char1_1_attack_04.png'),
+            load_image('10.resource/Char1_1_attack_03.png'),
+            load_image('10.resource/Char1_1_attack_01.png')
+        ]
     def set_scale(self, scale: float):
         self.scale = max(0.1, float(scale))
 
@@ -116,19 +126,20 @@ class Character:
                 self.anim_acc = 0.0
                 self.state = 'idle'
         elif self.state == 'attack':
+            # 현재 방향에 따라 사용할 이미지 결정
+            current_attack_img = self.attack_left_to_right if self.attack_direction == 'left_to_right' else self.attack_right_to_left
+
             # 공격 애니메이션
             self.action_acc += dt
             while self.action_acc >= self.action_frame_time:
                 self.action_frame += 1
                 self.action_acc -= self.action_frame_time
-                if self.action_frame >= len(self.attack_img):
+                if self.action_frame >= len(current_attack_img):
                     # 공격 방향 전환 (와이퍼처럼) - idle로 돌아가기 전에 먼저 실행
-                    old_direction = self.attack_direction
                     if self.attack_direction == 'left_to_right':
                         self.attack_direction = 'right_to_left'
                     else:
                         self.attack_direction = 'left_to_right'
-                    print(f"Direction changed: {old_direction} -> {self.attack_direction}")  # 디버깅용
 
                     # 공격 애니메이션 끝나면 idle로
                     self.state = 'idle'
@@ -154,21 +165,17 @@ class Character:
     def draw(self):
         if self.state == 'jump' or self.is_jumping:
             img = self.jump_img[self.jump_frame]
-            flip = ''
         elif self.state == 'attack':
-            img = self.attack_img[self.action_frame]
-            flip = 'h' if self.attack_direction == 'right_to_left' else ''
+            # 방향에 따라 다른 이미지 리스트 사용
+            if self.attack_direction == 'left_to_right':
+                img = self.attack_left_to_right[self.action_frame]
+            else:
+                img = self.attack_right_to_left[self.action_frame]
         elif self.state == 'defense':
             img = self.defense_img[0]
-            flip = ''
         else:  # idle
             img = self.char_img[self.frame]
-            flip = ''
 
         w = int(img.w * self.scale)
         h = int(img.h * self.scale)
-
-        if flip:
-            img.composite_draw(0, flip, self.x, self.y, w, h)
-        else:
-            img.draw(self.x, self.y, w, h)
+        img.draw(self.x, self.y, w, h)
