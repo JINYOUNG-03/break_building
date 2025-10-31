@@ -112,8 +112,10 @@ def handle_events():
                 elif event.key == SDLK_b:
                     manual_spawn_building()
                 elif event.key == SDLK_z:
+                    character.attack()
                     weapon.attack()
                 elif event.key == SDLK_x:
+                    character.defend()
                     weapon.defend()
                 continue
             # 다른 화면에서 처리할 키가 있으면 여기 추가
@@ -127,4 +129,3 @@ def handle_events():
             x, y = event.x, SCREEN_H - event.y
             print(f"Mouse move: ({x}, {y})")
             # 마우스 처리
-
