@@ -30,7 +30,7 @@ class Weapon:
 
         # attack/defense 상태에서 큰 애니메이션 크기
         # 원본 비율 550x330을 유지하면서 적당한 크기로 스케일링
-        self.anim_w, self.anim_h = 330, 198  # 550:330 비율 유지 (0.6배)
+        self.anim_w, self.anim_h = 300, 180  # 550:330 비율 유지 (0.6배)
 
         self.x, self.y = shared_state.x, shared_state.y
 
@@ -99,8 +99,24 @@ class Weapon:
             owner_x = self.owner.x
             owner_y = self.owner.y
 
-            self.x = owner_x - 15
-            self.y = owner_y + 30
+            if self.state == 'idle':
+                # idle 상태: 캐릭터 손 위치
+                self.x = owner_x - 15
+                self.y = owner_y + 30
+            elif self.state == 'attack':
+                # attack 상태: 방향에 따라 다른 위치
+                if self.attack_direction == 'left_to_right':
+                    # 왼쪽→오른쪽 공격
+                    self.x = owner_x + 7
+                    self.y = owner_y + 40
+                else:
+                    # 오른쪽→왼쪽 공격
+                    self.x = owner_x - 5
+                    self.y = owner_y + 40
+            else:
+                # defense 등 기타 상태
+                self.x = owner_x - 15
+                self.y = owner_y + 30
 
             # 공격 상태일 때 캐릭터 프레임과 완벽하게 동기화
             if self.state == 'attack' and hasattr(self.owner, 'action_frame'):
