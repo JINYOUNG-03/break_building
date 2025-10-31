@@ -76,7 +76,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, character
+    global running, current_screen, world, start_screen, menu, gamestart, character, weapon
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -111,6 +111,10 @@ def handle_events():
                     character.jump()
                 elif event.key == SDLK_b:
                     manual_spawn_building()
+                elif event.key == SDLK_z:
+                    weapon.attack()
+                elif event.key == SDLK_x:
+                    weapon.defend()
                 continue
             # 다른 화면에서 처리할 키가 있으면 여기 추가
         if event.type == SDL_MOUSEBUTTONDOWN:
@@ -123,5 +127,4 @@ def handle_events():
             x, y = event.x, SCREEN_H - event.y
             print(f"Mouse move: ({x}, {y})")
             # 마우스 처리
-
 
