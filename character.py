@@ -7,6 +7,9 @@ class Character:
     def __init__(self):
         self.char_img = [load_image(f'10.resource/Char1_1_idle_{i+1}.png') for i in range(4)]
         self.jump_img = [load_image(f'10.resource/Char1_1_jump_{i+1}.png') for i in range(3)]
+        self.attack_img = [load_image(f'10.resource/Char1_1_attack_0{i+1}.png') for i in range(4)]
+        self.defense_img = [load_image('10.resource/Char1_1_def.png')]
+
         self.x, self.y = 540 / 2, 140
         self.frame = 0
         self.scale = 2.0
@@ -31,6 +34,13 @@ class Character:
         self.jump_power = 800.0
         self.gravity = 1600.0
 
+        # 상태 관리 ('idle', 'jump', 'attack', 'defense')
+        self.state = 'idle'
+        self.action_frame = 0  # attack/defense 프레임
+        self.action_acc = 0.0
+        self.action_fps = 12.0  # attack/defense 애니메이션 속도
+        self.action_frame_time = 1.0 / self.action_fps
+
     def set_scale(self, scale: float):
         self.scale = max(0.1, float(scale))
 
@@ -51,11 +61,26 @@ class Character:
             self.target_x = self.positions[self.pos_index]
 
     def jump(self):
-        if not self.is_jumping and self.y == self.ground_y:
+        if not self.is_jumping and self.y == self.ground_y and self.state not in ['attack', 'defense']:
             self.is_jumping = True
+            self.state = 'jump'
             self.velocity_y = self.jump_power
             self.jump_frame = 0
             self.jump_acc = 0.0
+
+    def attack(self):
+        """공격 상태로 전환"""
+        if self.state not in ['attack', 'defense'] and not self.is_jumping:
+            self.state = 'attack'
+            self.action_frame = 0
+            self.action_acc = 0.0
+
+    def defend(self):
+        """방어 상태로 전환"""
+        if self.state not in ['attack', 'defense'] and not self.is_jumping:
+            self.state = 'defense'
+            self.action_frame = 0
+            self.action_acc = 0.0
 
     def update(self, dt: float):
         # 좌우 이동
@@ -86,17 +111,43 @@ class Character:
                 self.jump_frame = 0
                 self.jump_acc = 0.0
                 self.anim_acc = 0.0
+                self.state = 'idle'
+        elif self.state == 'attack':
+            # 공격 애니메이션
+            self.action_acc += dt
+            while self.action_acc >= self.action_frame_time:
+                self.action_frame += 1
+                self.action_acc -= self.action_frame_time
+                if self.action_frame >= len(self.attack_img):
+                    # 공격 애니메이션 끝나면 idle로
+                    self.state = 'idle'
+                    self.action_frame = 0
+                    self.action_acc = 0.0
+                    self.anim_acc = 0.0
+                    break
+        elif self.state == 'defense':
+            # 방어 애니메이션 (정적 이미지면 일정 시간 후 idle로)
+            self.action_acc += dt
+            if self.action_acc >= 0.5:  # 0.5초 후 idle로
+                self.state = 'idle'
+                self.action_frame = 0
+                self.action_acc = 0.0
+                self.anim_acc = 0.0
         else:
-            # 대기 애니메이션
+            # idle 애니메이션
             self.anim_acc += dt
             while self.anim_acc >= self.frame_time:
                 self.frame = (self.frame + 1) % len(self.char_img)
                 self.anim_acc -= self.frame_time
 
     def draw(self):
-        if self.is_jumping:
+        if self.state == 'jump' or self.is_jumping:
             img = self.jump_img[self.jump_frame]
-        else:
+        elif self.state == 'attack':
+            img = self.attack_img[self.action_frame]
+        elif self.state == 'defense':
+            img = self.defense_img[0]
+        else:  # idle
             img = self.char_img[self.frame]
         w = int(img.w * self.scale)
         h = int(img.h * self.scale)
