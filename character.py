@@ -6,7 +6,6 @@ height=80
 class Character:
     def __init__(self):
         self.char_img = [load_image(f'10.resource/Char1_1_idle_{i+1}.png') for i in range(4)]
-        self.jump_img = [load_image(f'10.resource/Char1_1_jump_{i+1}.png') for i in range(3)]
         self.defense_img = [load_image('10.resource/Char1_1_def.png')]
 
         self.x, self.y = 540 / 2, 140
@@ -17,7 +16,6 @@ class Character:
         self.anim_fps = 6.0
         self.frame_time = 1.0 / self.anim_fps
         self.anim_acc = 0.0      # idle 누적 시간
-        self.jump_acc = 0.0      # jump 누적 시간
 
         # 지정된 x값을 이동 (540 기준)
         self.positions = [540 * 0.25, 540 * 0.5, 540 * 0.75]
@@ -26,14 +24,7 @@ class Character:
 
         self.move_speed = 400.0
 
-        self.is_jumping = False
-        self.jump_frame = 0
-        self.ground_y = 140
-        self.velocity_y = 0.0
-        self.jump_power = 800.0
-        self.gravity = 1600.0
-
-        # 상태 관리 ('idle', 'jump', 'attack', 'defense')
+        # 상태 관리 ('idle', 'attack', 'defense')
         self.state = 'idle'
         self.action_frame = 0  # attack/defense 프레임
         self.action_acc = 0.0
@@ -41,7 +32,7 @@ class Character:
         self.action_frame_time = 1.0 / self.action_fps
 
         # 공격 방향 관리 (와이퍼처럼 번갈아가며)
-        self.attack_direction = 'left_to_right'  # 'left_to_right' 또는 'right_to_left
+        self.attack_direction = 'left_to_right'
 
         self.attack_left_to_right = [
             load_image('10.resource/Char1_1_attack_01.png'),
@@ -54,6 +45,7 @@ class Character:
             load_image('10.resource/Char1_1_attack_03.png'),
             load_image('10.resource/Char1_1_attack_01.png')
         ]
+
     def set_scale(self, scale: float):
         self.scale = max(0.1, float(scale))
 
@@ -73,24 +65,16 @@ class Character:
             self.pos_index += 1
             self.target_x = self.positions[self.pos_index]
 
-    def jump(self):
-        if not self.is_jumping and self.y == self.ground_y and self.state not in ['attack', 'defense']:
-            self.is_jumping = True
-            self.state = 'jump'
-            self.velocity_y = self.jump_power
-            self.jump_frame = 0
-            self.jump_acc = 0.0
-
     def attack(self):
         """공격 상태로 전환"""
-        if self.state not in ['attack', 'defense'] and not self.is_jumping:
+        if self.state not in ['attack', 'defense']:
             self.state = 'attack'
             self.action_frame = 0
             self.action_acc = 0.0
 
     def defend(self):
         """방어 상태로 전환"""
-        if self.state not in ['attack', 'defense'] and not self.is_jumping:
+        if self.state not in ['attack', 'defense']:
             self.state = 'defense'
             self.action_frame = 0
             self.action_acc = 0.0
@@ -107,25 +91,7 @@ class Character:
             else:
                 self.x += direction * step
 
-        # 점프 중
-        if self.is_jumping:
-            self.jump_acc += dt
-            while self.jump_acc >= self.frame_time:
-                self.jump_frame = (self.jump_frame + 1) % len(self.jump_img)
-                self.jump_acc -= self.frame_time
-
-            self.velocity_y -= self.gravity * dt
-            self.y += self.velocity_y * dt
-
-            if self.y <= self.ground_y:
-                self.y = self.ground_y
-                self.is_jumping = False
-                self.velocity_y = 0.0
-                self.jump_frame = 0
-                self.jump_acc = 0.0
-                self.anim_acc = 0.0
-                self.state = 'idle'
-        elif self.state == 'attack':
+        if self.state == 'attack':
             # 현재 방향에 따라 사용할 이미지 결정
             current_attack_img = self.attack_left_to_right if self.attack_direction == 'left_to_right' else self.attack_right_to_left
 
@@ -135,7 +101,7 @@ class Character:
                 self.action_frame += 1
                 self.action_acc -= self.action_frame_time
                 if self.action_frame >= len(current_attack_img):
-                    # 공격 방향 전환 (와이퍼처럼) - idle로 돌아가기 전에 먼저 실행
+                    # 공격 방향 전환 (와이퍼처럼)
                     if self.attack_direction == 'left_to_right':
                         self.attack_direction = 'right_to_left'
                     else:
@@ -148,7 +114,7 @@ class Character:
                     self.anim_acc = 0.0
                     break
         elif self.state == 'defense':
-            # 방어 애니메이션 (정적 이미지면 일정 시간 후 idle로)
+            # 방어 애니메이션
             self.action_acc += dt
             if self.action_acc >= 0.5:  # 0.5초 후 idle로
                 self.state = 'idle'
@@ -163,9 +129,7 @@ class Character:
                 self.anim_acc -= self.frame_time
 
     def draw(self):
-        if self.state == 'jump' or self.is_jumping:
-            img = self.jump_img[self.jump_frame]
-        elif self.state == 'attack':
+        if self.state == 'attack':
             # 방향에 따라 다른 이미지 리스트 사용
             if self.attack_direction == 'left_to_right':
                 img = self.attack_left_to_right[self.action_frame]

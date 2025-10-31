@@ -107,8 +107,6 @@ def handle_events():
                     character.move_left()
                 elif event.key in (SDLK_RIGHT, SDLK_d):
                     character.move_right()
-                elif event.key in (SDLK_SPACE, SDLK_w, SDLK_UP):
-                    character.jump()
                 elif event.key == SDLK_b:
                     manual_spawn_building()
                 elif event.key == SDLK_z:

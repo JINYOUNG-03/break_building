@@ -66,7 +66,6 @@ class Weapon:
             self.is_playing = True
             self.loop = True
         elif new_state == 'attack':
-            # 항상 left_to_right 이미지 사용 (right_to_left는 draw에서 반전)
             self.current_frames = self.attack_left_to_right
             self.is_playing = True
             self.loop = False
@@ -157,13 +156,13 @@ class Weapon:
             img = self.current_frames[self.frame]
 
             # 상태에 따라 다른 크기로 그리기
-            if self.state == 'idle':
-                # idle: 작은 검 이미지
-                img.draw(self.x, self.y, self.idle_w, self.idle_h)
-            else:
-                # attack/defense: 큰 애니메이션 이미지
+            if self.state == 'attack':
+                # attack만 큰 애니메이션 이미지
                 # 오른쪽→왼쪽 공격 시 좌우 반전
-                if self.state == 'attack' and self.attack_direction == 'right_to_left':
+                if self.attack_direction == 'right_to_left':
                     img.composite_draw(0, 'h', self.x, self.y, self.anim_w, self.anim_h)
                 else:
                     img.draw(self.x, self.y, self.anim_w, self.anim_h)
+            else:
+                # idle, jump, defense는 작은 검 이미지
+                img.draw(self.x, self.y, self.idle_w, self.idle_h)
