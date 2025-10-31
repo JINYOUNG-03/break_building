@@ -9,12 +9,12 @@ class Weapon:
 
         # attack: 공격 애니메이션 프레임들
         self.attack_img = [
-            load_image('10.resource/attack_re_02'),
-            load_image('10.resource/attack_re_03'),
-            load_image('10.resource/attack_re_04'),
-            load_image('10.resource/attack_re_05'),
-            load_image('10.resource/attack_re_06'),
-            load_image('10.resource/attack_re_07')
+            load_image('10.resource/attack_re_02.png'),
+            load_image('10.resource/attack_re_03.png'),
+            load_image('10.resource/attack_re_04.png'),
+            load_image('10.resource/attack_re_05.png'),
+            load_image('10.resource/attack_re_06.png'),
+            load_image('10.resource/attack_re_07.png')
         ]
 
         self.defense_img = [load_image('10.resource/1. Basic.png')]
