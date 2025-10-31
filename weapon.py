@@ -1,30 +1,99 @@
 from pico2d import *
 import shared_state
-#아니 한 번 휘두르면 다시 원 상태가 아니고 오른쪽 왼쪽 반복해야함 자동차 와이퍼 생각
+
 class Weapon:
-    def __init__(self, owner=None, offset=(30, 0), image_path='10.resource/1. Basic.png'):
-        self.weapon_img = load_image(image_path)
+    def __init__(self, owner=None, offset=(30, 0)):
+        # 상태별 이미지 로드
+        # idle: 기본 검 이미지 (정지)
+        self.idle_img = [load_image('10.resource/1. Basic.png')]
+
+        # attack: 공격 애니메이션 프레임들
+        self.attack_img = [
+            load_image('10.resource/attack_re_02'),
+            load_image('10.resource/attack_re_03'),
+            load_image('10.resource/attack_re_04'),
+            load_image('10.resource/attack_re_05'),
+            load_image('10.resource/attack_re_06'),
+            load_image('10.resource/attack_re_07')
+        ]
+
+        self.defense_img = [load_image('10.resource/1. Basic.png')]
+
         self.owner = owner
         self.offset_x, self.offset_y = offset
-        self.w, self.h = 24, 100   # 고정 출력 크기 100x24
+        self.w, self.h = 24, 100   # 출력 크기
         self.x, self.y = shared_state.x, shared_state.y
-        self.frame= 0
+
+        # 애니메이션 제어
+        self.frame = 0
         self.anim_acc = 0.0
-        self.frame_time 1.0/anim_fps
-        self.active= False
-        self.total_frames = len(self.images)
-        self.elasped =0.0
-        self.duration = self.total_frmaes * self.frame_time
-    def start(self):
-        if not self.active:
-            self.active = True
-            self.frame = 0
-            self.anim_acc = 0.0
-            self.elapsed =0.0
+        self.anim_fps = 12.0
+        self.frame_time = 1.0 / self.anim_fps
+
+        # 상태 관리
+        self.state = 'idle'  # 'idle', 'attack', 'defense'
+        self.current_frames = self.idle_img
+        self.total_frames = len(self.current_frames)
+
+        # 애니메이션 재생 제어
+        self.is_playing = False
+        self.loop = True  # idle은 루프, attack/defense는 한 번만 재생
+
+    def set_state(self, new_state):
+        """상태 변경"""
+        if self.state == new_state:
+            return
+
+        self.state = new_state
+        self.frame = 0
+        self.anim_acc = 0.0
+
+        if new_state == 'idle':
+            self.current_frames = self.idle_img
+            self.is_playing = True
+            self.loop = True
+        elif new_state == 'attack':
+            self.current_frames = self.attack_img
+            self.is_playing = True
+            self.loop = False
+        elif new_state == 'defense':
+            self.current_frames = self.defense_img
+            self.is_playing = True
+            self.loop = False
+
+        self.total_frames = len(self.current_frames)
+
+    def attack(self):
+        """z키로 공격"""
+        self.set_state('attack')
+
+    def defend(self):
+        """x키로 방어"""
+        self.set_state('defense')
+
     def update(self, dt):
-        # 항상 shared_state 값을 따라감 (owner가 있어도 owner는 shared_state를 업데이트함)
+        # 위치 동기화
         self.x = shared_state.x + self.offset_x
         self.y = shared_state.y + self.offset_y
 
+        # 애니메이션 재생 중일 때만 프레임 업데이트
+        if self.is_playing and self.total_frames > 0:
+            self.anim_acc += dt
+            while self.anim_acc >= self.frame_time:
+                self.frame += 1
+                self.anim_acc -= self.frame_time
+
+                # 프레임이 끝까지 갔을 때
+                if self.frame >= self.total_frames:
+                    if self.loop:
+                        # idle은 반복
+                        self.frame = 0
+                    else:
+                        # attack/defense는 끝나면 idle로 돌아감
+                        self.frame = self.total_frames - 1
+                        self.set_state('idle')
+
     def draw(self):
-        self.weapon_img.draw(self.x, self.y, self.w, self.h)
+        if self.total_frames > 0:
+            img = self.current_frames[self.frame]
+            img.draw(self.x, self.y, self.w, self.h)
