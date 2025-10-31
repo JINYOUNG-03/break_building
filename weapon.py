@@ -20,8 +20,14 @@ class Weapon:
         self.defense_img = [load_image('10.resource/1. Basic.png')]
 
         self.owner = owner
-        self.offset_x, self.offset_y = offset
-        self.w, self.h = 24, 100   # 출력 크기
+        self.idle_offset_x, self.idle_offset_y = offset  # idle 상태 오프셋
+
+        # idle 상태에서 작은 검 크기
+        self.idle_w, self.idle_h = 24, 100
+
+        # attack/defense 상태에서 큰 애니메이션 크기
+        self.anim_w, self.anim_h = 300, 200  # y축을 줄여서 캐릭터 크기에 맞춤
+
         self.x, self.y = shared_state.x, shared_state.y
 
         # 애니메이션 제어
@@ -36,7 +42,7 @@ class Weapon:
         self.total_frames = len(self.current_frames)
 
         # 애니메이션 재생 제어
-        self.is_playing = False
+        self.is_playing = True  # idle부터 시작
         self.loop = True  # idle은 루프, attack/defense는 한 번만 재생
 
     def set_state(self, new_state):
@@ -72,9 +78,15 @@ class Weapon:
         self.set_state('defense')
 
     def update(self, dt):
-        # 위치 동기화
-        self.x = shared_state.x + self.offset_x
-        self.y = shared_state.y + self.offset_y
+        # 위치 동기화: 상태에 따라 다른 위치 계산
+        if self.state == 'idle':
+            # idle 상태: 캐릭터 팔 위치에 작은 오프셋
+            self.x = shared_state.x + self.idle_offset_x
+            self.y = shared_state.y + self.idle_offset_y
+        else:
+            # attack/defense 상태: 캐릭터 중심 기준 (애니메이션 이미지가 중심에서 그려짐)
+            self.x = shared_state.x + 50  # 캐릭터 중심에서 약간 오른쪽
+            self.y = shared_state.y + 50  # 캐릭터 중심에서 약간 위
 
         # 애니메이션 재생 중일 때만 프레임 업데이트
         if self.is_playing and self.total_frames > 0:
@@ -96,4 +108,11 @@ class Weapon:
     def draw(self):
         if self.total_frames > 0:
             img = self.current_frames[self.frame]
-            img.draw(self.x, self.y, self.w, self.h)
+
+            # 상태에 따라 다른 크기로 그리기
+            if self.state == 'idle':
+                # idle: 작은 검 이미지
+                img.draw(self.x, self.y, self.idle_w, self.idle_h)
+            else:
+                # attack/defense: 큰 애니메이션 이미지
+                img.draw(self.x, self.y, self.anim_w, self.anim_h)
