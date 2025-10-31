@@ -26,7 +26,7 @@ def reset_world():
     menu = GameMenu()
     gamestart = GameStart()
     character = Character()
-    weapon = Weapon()
+    weapon = Weapon(owner=character)  # 캐릭터를 owner로 전달
     current_screen = start_screen
     world = [current_screen]
     buildings = []

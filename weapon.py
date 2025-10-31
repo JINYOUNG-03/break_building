@@ -78,6 +78,11 @@ class Weapon:
         self.set_state('defense')
 
     def update(self, dt):
+        # owner(캐릭터)의 상태를 따라감
+        if self.owner and hasattr(self.owner, 'state'):
+            if self.owner.state != self.state:
+                self.set_state(self.owner.state)
+
         # 위치 동기화: 상태에 따라 다른 위치 계산
         if self.state == 'idle':
             # idle 상태: 캐릭터 팔 위치에 작은 오프셋
