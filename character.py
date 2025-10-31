@@ -38,8 +38,11 @@ class Character:
         self.state = 'idle'
         self.action_frame = 0  # attack/defense 프레임
         self.action_acc = 0.0
-        self.action_fps = 12.0  # attack/defense 애니메이션 속도
+        self.action_fps = 20.0  # attack/defense 애니메이션 속도
         self.action_frame_time = 1.0 / self.action_fps
+
+        # 공격 방향 관리 (와이퍼처럼 번갈아가며)
+        self.attack_direction = 'left_to_right'  # 'left_to_right' 또는 'right_to_left'
 
     def set_scale(self, scale: float):
         self.scale = max(0.1, float(scale))
@@ -119,6 +122,14 @@ class Character:
                 self.action_frame += 1
                 self.action_acc -= self.action_frame_time
                 if self.action_frame >= len(self.attack_img):
+                    # 공격 방향 전환 (와이퍼처럼) - idle로 돌아가기 전에 먼저 실행
+                    old_direction = self.attack_direction
+                    if self.attack_direction == 'left_to_right':
+                        self.attack_direction = 'right_to_left'
+                    else:
+                        self.attack_direction = 'left_to_right'
+                    print(f"Direction changed: {old_direction} -> {self.attack_direction}")  # 디버깅용
+
                     # 공격 애니메이션 끝나면 idle로
                     self.state = 'idle'
                     self.action_frame = 0
@@ -143,12 +154,21 @@ class Character:
     def draw(self):
         if self.state == 'jump' or self.is_jumping:
             img = self.jump_img[self.jump_frame]
+            flip = ''
         elif self.state == 'attack':
             img = self.attack_img[self.action_frame]
+            flip = 'h' if self.attack_direction == 'right_to_left' else ''
         elif self.state == 'defense':
             img = self.defense_img[0]
+            flip = ''
         else:  # idle
             img = self.char_img[self.frame]
+            flip = ''
+
         w = int(img.w * self.scale)
         h = int(img.h * self.scale)
-        img.draw(self.x, self.y, w, h)
+
+        if flip:
+            img.composite_draw(0, flip, self.x, self.y, w, h)
+        else:
+            img.draw(self.x, self.y, w, h)

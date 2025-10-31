@@ -8,7 +8,8 @@ class Weapon:
         self.idle_img = [load_image('10.resource/1. Basic.png')]
 
         # attack: 공격 애니메이션 프레임들
-        self.attack_img = [
+        # 왼쪽→오른쪽 (02~07)
+        self.attack_left_to_right = [
             load_image('10.resource/attack_re_02.png'),
             load_image('10.resource/attack_re_03.png'),
             load_image('10.resource/attack_re_04.png'),
@@ -33,7 +34,7 @@ class Weapon:
         # 애니메이션 제어
         self.frame = 0
         self.anim_acc = 0.0
-        self.anim_fps = 18.0
+        self.anim_fps = 20.0
         self.frame_time = 1.0 / self.anim_fps
 
         # 상태 관리
@@ -44,6 +45,9 @@ class Weapon:
         # 애니메이션 재생 제어
         self.is_playing = True  # idle부터 시작
         self.loop = True  # idle은 루프, attack/defense는 한 번만 재생
+
+        # 공격 방향 관리 (와이퍼처럼 번갈아가며)
+        self.attack_direction = 'left_to_right'  # 'left_to_right' 또는 'right_to_left'
 
     def set_state(self, new_state):
         """상태 변경"""
@@ -59,7 +63,8 @@ class Weapon:
             self.is_playing = True
             self.loop = True
         elif new_state == 'attack':
-            self.current_frames = self.attack_img
+            # 항상 left_to_right 이미지 사용 (right_to_left는 draw에서 반전)
+            self.current_frames = self.attack_left_to_right
             self.is_playing = True
             self.loop = False
         elif new_state == 'defense':
@@ -80,8 +85,16 @@ class Weapon:
     def update(self, dt):
         # owner(캐릭터)의 상태를 따라감
         if self.owner and hasattr(self.owner, 'state'):
+            # 캐릭터의 공격 방향 먼저 동기화
+            if hasattr(self.owner, 'attack_direction'):
+                old_weapon_direction = self.attack_direction
+                self.attack_direction = self.owner.attack_direction
+                if old_weapon_direction != self.attack_direction:
+                    print(f"Weapon direction synced: {old_weapon_direction} -> {self.attack_direction}")  # 디버깅용
+
             if self.owner.state != self.state:
                 self.set_state(self.owner.state)
+                print(f"Weapon state changed to: {self.state}, direction: {self.attack_direction}")  # 디버깅용
 
         # 위치 동기화: 상태에 따라 다른 위치 계산
         if self.state == 'idle':
@@ -106,7 +119,7 @@ class Weapon:
                         # idle은 반복
                         self.frame = 0
                     else:
-                        # attack/defense는 끝나면 idle로 돌아감
+                        # attack/defense는 끝나면 idle로 돌아감 (방향 전환은 캐릭터가 담당)
                         self.frame = self.total_frames - 1
                         self.set_state('idle')
 
@@ -120,4 +133,8 @@ class Weapon:
                 img.draw(self.x, self.y, self.idle_w, self.idle_h)
             else:
                 # attack/defense: 큰 애니메이션 이미지
-                img.draw(self.x, self.y, self.anim_w, self.anim_h)
+                # 오른쪽→왼쪽 공격 시 좌우 반전
+                if self.state == 'attack' and self.attack_direction == 'right_to_left':
+                    img.composite_draw(0, 'h', self.x, self.y, self.anim_w, self.anim_h)
+                else:
+                    img.draw(self.x, self.y, self.anim_w, self.anim_h)
