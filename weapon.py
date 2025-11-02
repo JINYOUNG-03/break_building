@@ -1,7 +1,6 @@
-# python
 from pico2d import *
 import shared_state
-import math
+
 
 
 class Weapon:
@@ -50,7 +49,7 @@ class Weapon:
 
         # 애니메이션 재생 제어
         self.is_playing = True  # idle부터 시작
-        self.loop = True  # idle은 루프, attack은 한 번만 재생
+        self.loop = True  # idle은 루프, attack/defense는 한 번만 재생
 
         # 공격 방향 관리 (와이퍼처럼 번갈아가며)
         self.attack_direction = 'left_to_right'  # 'left_to_right' 또는 'right_to_left'
@@ -69,18 +68,18 @@ class Weapon:
             self.is_playing = True
             self.loop = True
         elif new_state == 'attack':
-            # 공격 시 방향에 따라 프레임 선택
-            if self.attack_direction == 'right_to_left':
-                self.current_frames = self.attack_right_to_left
-            else:
-                self.current_frames = self.attack_left_to_right
+            self.current_frames = self.attack_left_to_right
+
+
+
+
             self.is_playing = True
             self.loop = False
         elif new_state == 'defense':
-            # 방어는 고정 이미지(루프)로 유지해서 깜빡이지 않게 함
+
             self.current_frames = self.defense_img
             self.is_playing = True
-            self.loop = True
+            self.loop = False
 
         self.total_frames = len(self.current_frames)
 
@@ -135,14 +134,14 @@ class Weapon:
 
                 # 캐릭터의 프레임 진행도 계산 (0~1 사이)
                 char_total_frames = len(char_attack_img)
-                if char_total_frames > 0:
-                    char_progress = min(max(self.owner.action_frame / char_total_frames, 0.0), 0.9999)
-                    # 무기 프레임을 캐릭터 진행도에 맞춰 설정
-                    self.frame = int(char_progress * self.total_frames)
-                    if self.frame >= self.total_frames:
-                        self.frame = self.total_frames - 1
+                char_progress = self.owner.action_frame / char_total_frames
 
-        # 애니메이션 재생 (attack 상태는 외부 동기화이므로 자동 진행 제외)
+                # 무기 프레임을 캐릭터 진행도에 맞춰 설정
+                self.frame = int(char_progress * self.total_frames)
+                if self.frame >= self.total_frames:
+                    self.frame = self.total_frames - 1
+
+        # 애니메이션 재생 (attack 상태가 아닐 때만 자동 진행)
         if self.is_playing and self.total_frames > 0 and self.state != 'attack':
             self.anim_acc += dt
             while self.anim_acc >= self.frame_time:
@@ -152,10 +151,10 @@ class Weapon:
                 # 프레임이 끝까지 갔을 때
                 if self.frame >= self.total_frames:
                     if self.loop:
-                        # idle/defense는 반복 유지
+                        # idle은 반복
                         self.frame = 0
                     else:
-                        # attack만 끝나면 idle로 돌아감
+                        # attack/defense는 끝나면 idle로 돌아감
                         self.frame = self.total_frames - 1
                         self.set_state('idle')
 
@@ -171,9 +170,10 @@ class Weapon:
                     img.composite_draw(0, 'h', self.x, self.y, self.anim_w, self.anim_h)
                 else:
                     img.draw(self.x, self.y, self.anim_w, self.anim_h)
-            elif self.state == 'defense':
-                # defense: 검을 가로로 출력 (90도 회전)
-                # 길이는 anim_w, 두께는 idle_w로 설정
-                img.composite_draw(math.pi / 2, '', self.x, self.y, self.anim_w, self.anim_h/2)
+
+
+
+
             else:
+                # idle, jump, defense는 작은 검 이미지
                 img.draw(self.x, self.y, self.idle_w, self.idle_h)
