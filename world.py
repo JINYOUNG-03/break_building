@@ -1,11 +1,11 @@
 from pico2d import *
-import random
 from building import BuildingManager
 from start import Start
 from menu import GameMenu
 from gamestart import GameStart
 from character import Character
 from weapon import Weapon
+from collision import CollisionManager, CollisionHandler
 
 SCREEN_H=960
 # 전역 상태들
@@ -14,19 +14,22 @@ start_screen = None
 menu = None
 gamestart = None
 character = None
+weapon = None
 current_screen = None
 world = []
 buildings = []
+collision_handler = None
 building_manager = None
 
 def reset_world():
-    global running, start_screen, menu, gamestart, character, current_screen, world, buildings, building_manager,weapon
+    global running, start_screen, menu, gamestart, character, weapon, current_screen, world, buildings, building_manager, collision_handler
     running = True
     start_screen = Start()
     menu = GameMenu()
     gamestart = GameStart()
     character = Character()
     weapon = Weapon(owner=character)  # 캐릭터를 owner로 전달
+    collision_handler = CollisionHandler()  # 충돌 핸들러 초기화
     current_screen = start_screen
     world = [current_screen]
     buildings = []
@@ -52,16 +55,33 @@ def manual_spawn_building():
         building_manager.manual_spawn()
 
 def update_world(dt):
-    global building_manager, current_screen, gamestart, world
+    global building_manager, current_screen, gamestart, world, weapon, character, collision_handler
     # world 객체들 업데이트
     for obj in world:
         try:
             obj.update(dt)
         except TypeError:
             obj.update()
+
     # building_manager 업데이트
     if building_manager:
         building_manager.update(dt, current_screen == gamestart)
+
+    # 게임 플레이 중일 때만 충돌 검사
+    if current_screen == gamestart and building_manager and collision_handler and weapon and character:
+        # 무기-건물 충돌 검사
+        weapon_collisions = CollisionManager.check_weapon_buildings(weapon, building_manager.buildings)
+        for building in weapon_collisions:
+            collision_handler.handle_weapon_building_collision(weapon, building)
+            # 충돌한 건물 제거 (옵션)
+            # building_manager.buildings.remove(building)
+
+        # 캐릭터-건물 충돌 검사
+        character_collisions = CollisionManager.check_character_buildings(character, building_manager.buildings)
+        for building in character_collisions:
+            collision_handler.handle_character_building_collision(character, building)
+            # 충돌한 건물 제거 (옵션)
+            # building_manager.buildings.remove(building)
 
 def render_world():
     global building_manager, world
