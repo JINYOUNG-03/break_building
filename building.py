@@ -44,7 +44,7 @@ class Building:
     def get_bb(self):
         half_w = self.w / 2
         half_h = self.h / 2
-        return self.x - half_w, self.y - half_h, self.x + half_w, self.y + half_h
+        return self.x - half_w, self.y - half_h + 15, self.x + half_w, self.y + half_h
 
 
 class BuildingManager:
