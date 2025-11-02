@@ -68,7 +68,8 @@ class Weapon:
             self.is_playing = True
             self.loop = True
         elif new_state == 'attack':
-            self.current_frames = self.attack_left_to_right
+            # 현재 공격 방향에 따라 프레임 선택
+            self.current_frames = self.attack_left_to_right #여기 절대로 수정하면 안됨 여기 수정하면 애니메이션 오류남
             self.is_playing = True
             self.loop = False
         elif new_state == 'defense':
@@ -152,6 +153,27 @@ class Weapon:
                         # attack/defense는 끝나면 idle로 돌아감
                         self.frame = self.total_frames - 1
                         self.set_state('idle')
+    def get_bb(self):
+        """바운딩 박스 반환 (x1, y1, x2, y2)"""
+        if self.state == 'attack':
+            # 공격 시 큰 애니메이션 박스
+            half_w = self.anim_w / 2
+            half_h = self.anim_h / 2
+            return (self.x - half_w, self.y - half_h,
+                    self.x + half_w, self.y + half_h)
+        elif self.state == 'defense':
+            # 방어 시 가로로 긴 박스 (90도 회전)
+            half_w = self.anim_w / 2  # 가로 길이
+            half_h = self.idle_w / 2  # 세로 두께
+            return (self.x - half_w, self.y - 20 - half_h,
+                    self.x + half_w, self.y - 20 + half_h)
+        else:
+            # idle 상태: 작은 검
+            half_w = self.idle_w / 2
+            half_h = self.idle_h / 2
+            return (self.x - half_w, self.y - half_h,
+                    self.x + half_w, self.y + half_h)
+
 
     def draw(self):
         if self.total_frames > 0:
@@ -166,7 +188,13 @@ class Weapon:
                 else:
                     img.draw(self.x, self.y, self.anim_w, self.anim_h)
             elif self.state =='defense':
+                import math
                 img.composite_draw(math.pi / 2, '', self.x, self.y-20, 24, 100)
             else:
                 # idle, jump, defense는 작은 검 이미지
                 img.draw(self.x, self.y, self.idle_w, self.idle_h)
+
+        # 바운딩 박스 그리기 (디버그용)
+        x1, y1, x2, y2 = self.get_bb()
+        draw_rectangle(x1, y1, x2, y2)
+        draw_rectangle(x1, y1, x2, y2)
