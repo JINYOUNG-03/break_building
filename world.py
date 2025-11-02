@@ -20,9 +20,10 @@ world = []
 buildings = []
 collision_handler = None
 building_manager = None
+x_pressed = False
 
 def reset_world():
-    global running, start_screen, menu, gamestart, character, weapon, current_screen, world, buildings, building_manager, collision_handler
+    global running, start_screen, menu, gamestart, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -33,6 +34,7 @@ def reset_world():
     current_screen = start_screen
     world = [current_screen]
     buildings = []
+    x_pressed = False
 
     # BuildingManager 초기화
     building_manager = BuildingManager(
@@ -55,7 +57,7 @@ def manual_spawn_building():
         building_manager.manual_spawn()
 
 def update_world(dt):
-    global building_manager, current_screen, gamestart, world, weapon, character, collision_handler
+    global building_manager, current_screen, gamestart, world, weapon, character, collision_handler, x_pressed
     # world 객체들 업데이트
     for obj in world:
         try:
@@ -91,7 +93,8 @@ def update_world(dt):
         # 캐릭터-건물 충돌 검사
         character_collisions = CollisionManager.check_character_buildings(character, building_manager.buildings)
         for building in character_collisions:
-            collision_handler.handle_character_building_collision(character, building)
+            # 전체 빌딩 리스트와 X키 상태를 전달
+            collision_handler.handle_character_building_collision(character, building, building_manager.buildings, x_pressed)
             # 충돌한 건물 제거 (옵션)
             # building_manager.buildings.remove(building)
 
@@ -108,7 +111,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, character, weapon
+    global running, current_screen, world, start_screen, menu, gamestart, character, weapon, x_pressed
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -145,10 +148,17 @@ def handle_events():
                     character.attack()
                     weapon.attack()
                 elif event.key == SDLK_x:
+                    # X키 누름 상태를 기록
+                    x_pressed = True
                     character.defend()
                     weapon.defend()
                 continue
             # 다른 화면에서 처리할 키가 있으면 여기 추가
+        if event.type == SDL_KEYUP:
+            # 키가 떼어졌을 때 X키 상태 초기화
+            if event.key == SDLK_x:
+                x_pressed = False
+            continue
         if event.type == SDL_MOUSEBUTTONDOWN:
             x, y = event.x, SCREEN_H - event.y
             print(f"Mouse down: ({x}, {y})")
