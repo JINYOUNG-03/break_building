@@ -92,3 +92,14 @@ class BuildingManager:
     def clear(self):
         self.buildings.clear()
         self.spawn_timer = 0.0
+
+    def destroy_building(self, building):
+        """지정된 단일 빌딩을 리스트에서 제거합니다.
+        - 빌딩이 없으면 False 반환, 제거되면 True 반환.
+        - 파편/이펙트 처리는 별도 메서드 또는 확장으로 처리하세요(현재는 단순 제거).
+        """
+        try:
+            self.buildings.remove(building)
+            return True
+        except ValueError:
+            return False
