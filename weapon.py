@@ -69,17 +69,12 @@ class Weapon:
             self.loop = True
         elif new_state == 'attack':
             self.current_frames = self.attack_left_to_right
-
-
-
-
             self.is_playing = True
             self.loop = False
         elif new_state == 'defense':
-
             self.current_frames = self.defense_img
             self.is_playing = True
-            self.loop = False
+            self.loop = True
 
         self.total_frames = len(self.current_frames)
 
@@ -113,12 +108,12 @@ class Weapon:
                 # attack 상태: 방향에 따라 다른 위치
                 if self.attack_direction == 'left_to_right':
                     # 왼쪽→오른쪽 공격
-                    self.x = owner_x + 7
-                    self.y = owner_y + 40
+                    self.x = owner_x + 4.5
+                    self.y = owner_y + 35
                 else:
                     # 오른쪽→왼쪽 공격
-                    self.x = owner_x - 5
-                    self.y = owner_y + 40
+                    self.x = owner_x - 4.5
+                    self.y = owner_y + 35
             else:
                 # defense 등 기타 상태
                 self.x = owner_x - 15
@@ -170,10 +165,8 @@ class Weapon:
                     img.composite_draw(0, 'h', self.x, self.y, self.anim_w, self.anim_h)
                 else:
                     img.draw(self.x, self.y, self.anim_w, self.anim_h)
-
-
-
-
+            elif self.state =='defense':
+                img.composite_draw(math.pi / 2, '', self.x, self.y-20, 24, 100)
             else:
                 # idle, jump, defense는 작은 검 이미지
                 img.draw(self.x, self.y, self.idle_w, self.idle_h)
