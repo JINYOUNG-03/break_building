@@ -73,6 +73,7 @@ class BuildingManager:
 
         # 화면 밖으로 나간 빌딩 제거
         self.buildings = [b for b in self.buildings if not b.is_offscreen(self.screen_bottom)]
+        #여기를 나중에 빌딩 제거가 아니라 게임 오버 화면 나오게 해야함.
 
     def draw(self):
         for b in self.buildings:

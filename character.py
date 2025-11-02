@@ -168,4 +168,4 @@ class Character:
         half_h = h / 2
 
         return (self.x - half_w, self.y - half_h,
-                self.x + half_w, self.y + half_h)
+                self.x + half_w, self.y + half_h - 10)
