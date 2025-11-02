@@ -71,14 +71,22 @@ def update_world(dt):
     if current_screen == gamestart and building_manager and collision_handler and weapon and character:
         # 무기-건물 충돌 검사
         weapon_collisions = CollisionManager.check_weapon_buildings(weapon, building_manager.buildings)
-        if weapon_collisions and not getattr(weapon, 'has_hit', False):
-            # 한 프레임에 한 개의 빌딩만 처리: 가장 첫 충돌 대상만 선택
-            b = weapon_collisions[0]
-            collision_handler.handle_weapon_building_collision(weapon, b)
-            # 파괴 처리(파편 이펙트 생성 포함)
-            building_manager.destroy_building(b)
-            # 무기가 이번 공격에서 이미 히트했음을 표시
-            weapon.has_hit = True
+        # attack_id를 사용해 동일한 공격에서 중복 히트되는 것을 방지
+        if weapon_collisions and hasattr(weapon, 'attack_id'):
+            if getattr(weapon, 'last_hit_attack_id', -1) != weapon.attack_id:
+                # 첫 충돌 객체 하나만 처리
+                b = weapon_collisions[0]
+                collision_handler.handle_weapon_building_collision(weapon, b)
+                building_manager.destroy_building(b)
+                # 이번 attack_id에서 이미 히트했음을 기록
+                weapon.last_hit_attack_id = weapon.attack_id
+        elif weapon_collisions:
+            # fallback: has_hit 플래그 사용
+            if not getattr(weapon, 'has_hit', False):
+                b = weapon_collisions[0]
+                collision_handler.handle_weapon_building_collision(weapon, b)
+                building_manager.destroy_building(b)
+                weapon.has_hit = True
 
         # 캐릭터-건물 충돌 검사
         character_collisions = CollisionManager.check_character_buildings(character, building_manager.buildings)
