@@ -54,6 +54,11 @@ class Weapon:
         # 공격 방향 관리 (와이퍼처럼 번갈아가며)
         self.attack_direction = 'left_to_right'  # 'left_to_right' 또는 'right_to_left'
 
+        # 공격당 한 번만 히트 처리하기 위한 플래그
+        self.has_hit = False
+        self.attack_id = 0
+        self.last_hit_attack_id = -1
+
     def set_state(self, new_state):
         """상태 변경"""
         if self.state == new_state:
@@ -67,11 +72,15 @@ class Weapon:
             self.current_frames = self.idle_img
             self.is_playing = True
             self.loop = True
+            # 공격 상태가 끝난 뒤에는 히트 플래그를 초기화
+            self.has_hit = False
         elif new_state == 'attack':
             # 현재 공격 방향에 따라 프레임 선택
             self.current_frames = self.attack_left_to_right #여기 절대로 수정하면 안됨 여기 수정하면 애니메이션 오류남
             self.is_playing = True
             self.loop = False
+            # 공격 시작 시에는 아직 히트하지 않았음
+            self.has_hit = False
         elif new_state == 'defense':
             self.current_frames = self.defense_img
             self.is_playing = True
@@ -81,6 +90,9 @@ class Weapon:
 
     def attack(self):
         """z키로 공격"""
+        # 공격을 시작할 때 새로운 attack_id를 부여하고 has_hit를 초기화
+        self.attack_id += 1
+        self.has_hit = False
         self.set_state('attack')
 
     def defend(self):
@@ -153,6 +165,7 @@ class Weapon:
                         # attack/defense는 끝나면 idle로 돌아감
                         self.frame = self.total_frames - 1
                         self.set_state('idle')
+
     def get_bb(self):
         """바운딩 박스 반환 (x1, y1, x2, y2)"""
         if self.state == 'attack':
