@@ -143,3 +143,29 @@ class Character:
         w = int(img.w * self.scale)
         h = int(img.h * self.scale)
         img.draw(self.x, self.y, w, h)
+
+        # 바운딩 박스 그리기 (디버그용)
+        x1, y1, x2, y2 = self.get_bb()
+        draw_rectangle(x1, y1, x2, y2)
+
+
+    def get_bb(self):
+        """바운딩 박스 반환 (x1, y1, x2, y2)"""
+        # 캐릭터 이미지 크기 계산
+        if self.state == 'attack':
+            if self.attack_direction == 'left_to_right':
+                img = self.attack_left_to_right[self.action_frame]
+            else:
+                img = self.attack_right_to_left[self.action_frame]
+        elif self.state == 'defense':
+            img = self.defense_img[0]
+        else:
+            img = self.char_img[self.frame]
+
+        w = int(img.w * self.scale)
+        h = int(img.h * self.scale)
+        half_w = w / 2
+        half_h = h / 2
+
+        return (self.x - half_w, self.y - half_h,
+                self.x + half_w, self.y + half_h)
