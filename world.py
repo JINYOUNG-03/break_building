@@ -71,10 +71,13 @@ def update_world(dt):
     if current_screen == gamestart and building_manager and collision_handler and weapon and character:
         # 무기-건물 충돌 검사
         weapon_collisions = CollisionManager.check_weapon_buildings(weapon, building_manager.buildings)
-        for building in weapon_collisions:
-            collision_handler.handle_weapon_building_collision(weapon, building)
-            # 충돌한 건물 제거 (옵션)
-            # building_manager.buildings.remove(building)
+        if weapon_collisions:
+            # 충돌한 빌딩 제거
+            for b in weapon_collisions:
+                collision_handler.handle_weapon_building_collision(weapon, b)
+
+            # 한꺼번에 제거
+            building_manager.buildings = [b for b in building_manager.buildings if b not in weapon_collisions]
 
         # 캐릭터-건물 충돌 검사
         character_collisions = CollisionManager.check_character_buildings(character, building_manager.buildings)
