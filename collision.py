@@ -88,13 +88,62 @@ class CollisionHandler:
 
         return True
 
-    def handle_character_building_collision(self, character, building):
+    def _move_buildings_up(self, buildings, dy):
+        """
+        빌딩들을 화면에서 위로 dy 픽셀만큼 이동시킴.
+        다양한 빌딩 인터페이스를 지원:move(dx, dy), y 속성, get_bb/set_bb 등.
+        dy는 양수(위로 이동시키는 픽셀 수)
+        """
+        if not buildings or dy <= 0:
+            return
+
+        for b in buildings:
+            # 우선 move(dx, dy) 메서드가 있으면 사용
+            move_fn = getattr(b, 'move', None)
+            if callable(move_fn):
+                try:
+                    move_fn(0, dy)
+                    continue
+                except Exception:
+                    pass
+
+            # y 같은 속성이 있으면 직접 조정
+            for attr in ('y', 'pos_y', 'y_pos', 'py'):
+                if hasattr(b, attr):
+                    try:
+                        current = getattr(b, attr)
+                        setattr(b, attr, current + dy)
+                        break
+                    except Exception:
+                        continue
+            else:
+                # get_bb/set_bb 방식으로 조정 가능하면 사용
+                if hasattr(b, 'get_bb') and hasattr(b, 'set_bb'):
+                    try:
+                        x1, y1, x2, y2 = b.get_bb()
+                        b.set_bb((x1, y1 + dy, x2, y2 + dy))
+                    except Exception:
+                        # 변경 불가하면 무시
+                        pass
+
+    def handle_character_building_collision(self, character, building, buildings=None, x_pressed=False):
         """
         캐릭터-건물 충돌 처리
-        게임 오버나 캐릭터 데미지 등을 여기서 처리
+        - buildings: 전체 빌딩 리스트(있을 때 X키 누름 시 전체를 위로 이동)
+        - x_pressed: X키가 눌렸는지 여부
+
+        반환값: 충돌로 인한 처리 발생 여부 (True/False)
         """
-        # 방어 상태면 데미지 감소 또는 무시
-        if character.state == 'defense':
-            print("  → 방어 성공! 데미지 무시")
+        # 방어 상태면 건물들이 위로 이동함
+        if getattr(character, 'state', None) == 'defense':
+            # X키가 눌렸고 전체 빌딩 리스트가 주어졌으면 빌딩들을 위로 이동
+            if x_pressed and buildings:
+                push_amount = 150  # 위로 이동 픽셀 수 (필요하면 조정)
+                self._move_buildings_up(buildings, push_amount)
+                print(f"  → 방어 및 반격: 전체 빌딩을 위로 {push_amount} 이동")
+                return True
+
+            print("  → 방어 성공!")
             return False
+
 
