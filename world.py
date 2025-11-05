@@ -8,6 +8,7 @@ from weapon import Weapon
 from collision import CollisionManager, CollisionHandler
 
 SCREEN_H=960
+SCREEN_W=540
 # 전역 상태들
 running = False
 start_screen = None
@@ -21,9 +22,10 @@ buildings = []
 collision_handler = None
 building_manager = None
 x_pressed = False
+score = 0  # 점수 추가
 
 def reset_world():
-    global running, start_screen, menu, gamestart, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed
+    global running, start_screen, menu, gamestart, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -35,6 +37,7 @@ def reset_world():
     world = [current_screen]
     buildings = []
     x_pressed = False
+    score = 0  # 점수 초기화
 
     # BuildingManager 초기화
     building_manager = BuildingManager(
@@ -57,7 +60,7 @@ def manual_spawn_building():
         building_manager.manual_spawn()
 
 def update_world(dt):
-    global building_manager, current_screen, gamestart, world, weapon, character, collision_handler, x_pressed
+    global building_manager, current_screen, gamestart, world, weapon, character, collision_handler, x_pressed, score
     # world 객체들 업데이트
     for obj in world:
         try:
@@ -80,6 +83,7 @@ def update_world(dt):
                 b = weapon_collisions[0]
                 collision_handler.handle_weapon_building_collision(weapon, b)
                 building_manager.destroy_building(b)
+                score += 100  # 건물 파괴 시 점수 증가
                 # 이번 attack_id에서 이미 히트했음을 기록
                 weapon.last_hit_attack_id = weapon.attack_id
         elif weapon_collisions:
@@ -88,6 +92,7 @@ def update_world(dt):
                 b = weapon_collisions[0]
                 collision_handler.handle_weapon_building_collision(weapon, b)
                 building_manager.destroy_building(b)
+                score += 100  # 건물 파괴 시 점수 증가
                 weapon.has_hit = True
 
         # 캐릭터-건물 충돌 검사
@@ -99,7 +104,7 @@ def update_world(dt):
             # building_manager.buildings.remove(building)
 
 def render_world():
-    global building_manager, world
+    global building_manager, world, score, current_screen, gamestart
     clear_canvas()
     # 배경을 먼저 그림
     for obj in world:
@@ -107,6 +112,13 @@ def render_world():
     # 그 다음 건물을 그림 (배경 위에 표시)
     if building_manager:
         building_manager.draw()
+
+    # 게임 플레이 중일 때만 점수 표시
+    if current_screen == gamestart:
+        # 점수 텍스트 표시 (왼쪽 상단)
+        font = load_font('ENCR10B.TTF', 30)
+        font.draw(20, SCREEN_H - 40, f'SCORE: {score}', (255, 255, 255))
+
     update_canvas()
 
 def handle_events():
