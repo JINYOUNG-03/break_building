@@ -23,9 +23,10 @@ collision_handler = None
 building_manager = None
 x_pressed = False
 score = 0  # 점수 추가
+combo_score = 100  # 콤보 점수 (연속 파괴 시 증가)
 
 def reset_world():
-    global running, start_screen, menu, gamestart, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score
+    global running, start_screen, menu, gamestart, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -38,6 +39,7 @@ def reset_world():
     buildings = []
     x_pressed = False
     score = 0  # 점수 초기화
+    combo_score = 100  # 콤보 점수 초기화
 
     # BuildingManager 초기화
     building_manager = BuildingManager(
@@ -60,7 +62,7 @@ def manual_spawn_building():
         building_manager.manual_spawn()
 
 def update_world(dt):
-    global building_manager, current_screen, gamestart, world, weapon, character, collision_handler, x_pressed, score
+    global building_manager, current_screen, gamestart, world, weapon, character, collision_handler, x_pressed, score, combo_score
     # world 객체들 업데이트
     for obj in world:
         try:
@@ -83,7 +85,8 @@ def update_world(dt):
                 b = weapon_collisions[0]
                 collision_handler.handle_weapon_building_collision(weapon, b)
                 building_manager.destroy_building(b)
-                score += 100  # 건물 파괴 시 점수 증가
+                score += combo_score  # 콤보 점수만큼 증가
+                combo_score += 10  # 다음 파괴 시 10점 더 증가
                 # 이번 attack_id에서 이미 히트했음을 기록
                 weapon.last_hit_attack_id = weapon.attack_id
         elif weapon_collisions:
@@ -92,7 +95,8 @@ def update_world(dt):
                 b = weapon_collisions[0]
                 collision_handler.handle_weapon_building_collision(weapon, b)
                 building_manager.destroy_building(b)
-                score += 100  # 건물 파괴 시 점수 증가
+                score += combo_score  # 콤보 점수만큼 증가
+                combo_score += 10  # 다음 파괴 시 10점 더 증가
                 weapon.has_hit = True
 
         # 캐릭터-건물 충돌 검사
@@ -123,7 +127,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, character, weapon, x_pressed
+    global running, current_screen, world, start_screen, menu, gamestart, character, weapon, x_pressed, combo_score
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -164,6 +168,7 @@ def handle_events():
                     x_pressed = True
                     character.defend()
                     weapon.defend()
+                    combo_score = 100  # 방어 상태로 전환 시 콤보 점수 리셋
                 continue
             # 다른 화면에서 처리할 키가 있으면 여기 추가
         if event.type == SDL_KEYUP:
