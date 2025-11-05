@@ -125,6 +125,38 @@ class CollisionHandler:
                     except Exception:
                         # 변경 불가하면 무시
                         pass
+        # 이동 후 겹침 해소
+        self._separate_overlapping_buildings(buildings)
+
+    def _separate_overlapping_buildings(self, buildings, min_gap=30):
+        """겹친 건물들을 분리합니다"""
+        if not buildings:
+            return
+
+        # Y 좌표 기준으로 정렬 (위에서 아래로)
+        sorted_buildings = sorted(buildings, key=lambda b: getattr(b, 'y', 0), reverse=True)
+
+        for i in range(len(sorted_buildings) - 1):
+            b1 = sorted_buildings[i]
+            b2 = sorted_buildings[i + 1]
+
+            try:
+                bb1 = b1.get_bb()
+                bb2 = b2.get_bb()
+
+                x1_1, y1_1, x2_1, y2_1 = bb1
+                x1_2, y1_2, x2_2, y2_2 = bb2
+
+                # Y축에서 겹치는지 확인
+                overlap = y1_1 - (y2_2 + min_gap)
+
+                if overlap < 0:  # 겹침 발생
+                    # 아래 건물을 더 아래로 밀어냄
+                    push_down = abs(overlap)
+                    if hasattr(b2, 'y'):
+                        b2.y -= push_down
+            except Exception:
+                continue
 
     def handle_character_building_collision(self, character, building, buildings=None, x_pressed=False):
         """
@@ -145,5 +177,3 @@ class CollisionHandler:
 
             print("  → 방어 성공!")
             return False
-
-
