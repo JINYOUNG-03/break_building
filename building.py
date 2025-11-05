@@ -48,7 +48,7 @@ class Building:
 
 
 class BuildingManager:
-    def __init__(self, spawn_interval=1.0, spawn_x=270, spawn_y=1000, fall_speed=200.0, screen_bottom=0):
+    def __init__(self, spawn_interval=1.0, spawn_x=270, spawn_y=1000, fall_speed=200.0, screen_bottom=0, min_gap=5):
         self.spawn_interval = spawn_interval
         self.spawn_timer = 0.0
         self.spawn_x = spawn_x
@@ -56,6 +56,22 @@ class BuildingManager:
         self.fall_speed = fall_speed
         self.screen_bottom = screen_bottom
         self.buildings = []
+        self.min_gap = min_gap  # 건물 간 최소 간격 (픽셀)
+
+    def _can_spawn(self, new_building):
+        """새 건물이 기존 건물들과 겹치지 않는지 확인"""
+        new_bb = new_building.get_bb()
+        x1_new, y1_new, x2_new, y2_new = new_bb
+
+        for existing in self.buildings:
+            ex_bb = existing.get_bb()
+            x1_ex, y1_ex, x2_ex, y2_ex = ex_bb
+
+            # Y축 겹침 검사 (min_gap 고려)
+            if not (y2_new + self.min_gap < y1_ex or y1_new - self.min_gap > y2_ex):
+                # Y축이 겹치면 스폰 불가
+                return False
+        return True
 
     def update(self, dt, gamestart_active):
         # gamestart 상태일 때만 주기적으로 스폰
@@ -63,8 +79,10 @@ class BuildingManager:
             self.spawn_timer += dt
             while self.spawn_timer >= self.spawn_interval:
                 b = Building(self.spawn_x, self.spawn_y, self.fall_speed)
-                b.start_fall()
-                self.buildings.append(b)
+                # 겹치지 않을 때만 스폰
+                if self._can_spawn(b):
+                    b.start_fall()
+                    self.buildings.append(b)
                 self.spawn_timer -= self.spawn_interval
 
         # 기존 빌딩 업데이트
@@ -86,8 +104,9 @@ class BuildingManager:
     def manual_spawn(self):
         """수동으로 빌딩 하나를 즉시 생성하고 떨어뜨림"""
         b = Building(self.spawn_x, self.spawn_y, self.fall_speed)
-        b.start_fall()
-        self.buildings.append(b)
+        if self._can_spawn(b):
+            b.start_fall()
+            self.buildings.append(b)
 
     def clear(self):
         self.buildings.clear()
