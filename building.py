@@ -92,7 +92,7 @@ class BuildingManager:
         # 기존 건물들의 낙하 속도도 업데이트
         for building in self.buildings:
             building.fall_speed = self.fall_speed
-            
+
     def update(self, dt, gamestart_active):
         # gamestart 상태일 때만 주기적으로 스폰
         if gamestart_active:

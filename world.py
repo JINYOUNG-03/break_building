@@ -3,6 +3,7 @@ from building import BuildingManager
 from start import Start
 from menu import GameMenu
 from gamestart import GameStart
+from gameover import GameOver
 from character import Character
 from weapon import Weapon
 from collision import CollisionManager, CollisionHandler
@@ -14,6 +15,7 @@ running = False
 start_screen = None
 menu = None
 gamestart = None
+gameover = None
 character = None
 weapon = None
 current_screen = None
@@ -26,11 +28,12 @@ score = 0  # 점수 추가
 combo_score = 100  # 콤보 점수 (연속 파괴 시 증가)
 
 def reset_world():
-    global running, start_screen, menu, gamestart, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score
+    global running, start_screen, menu, gamestart, gameover, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score
     running = True
     start_screen = Start()
     menu = GameMenu()
     gamestart = GameStart()
+    gameover = GameOver()
     character = Character()
     weapon = Weapon(owner=character)  # 캐릭터를 owner로 전달
     collision_handler = CollisionHandler()  # 충돌 핸들러 초기화
@@ -62,7 +65,7 @@ def manual_spawn_building():
         building_manager.manual_spawn()
 
 def update_world(dt):
-    global building_manager, current_screen, gamestart, world, weapon, character, collision_handler, x_pressed, score, combo_score
+    global building_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score
     # world 객체들 업데이트
     for obj in world:
         try:
@@ -74,8 +77,16 @@ def update_world(dt):
     if building_manager:
         building_manager.update(dt, current_screen == gamestart)
 
-    # 게임 플레이 중일 때만 충돌 검사
+    # 게임 플레이 중일 때만 충돌 검사 및 게임오버 체크
     if current_screen == gamestart and building_manager and collision_handler and weapon and character:
+        # 건물이 y좌표 110 이하로 내려가면 게임오버
+        for building in building_manager.buildings:
+            if building.y <= 110:
+                current_screen = gameover
+                world = [current_screen]
+                print(f"[게임오버] 최종 점수: {score}")
+                return
+
         # 무기-건물 충돌 검사
         weapon_collisions = CollisionManager.check_weapon_buildings(weapon, building_manager.buildings)
         # attack_id를 사용해 동일한 공격에서 중복 히트되는 것을 방지
@@ -108,13 +119,13 @@ def update_world(dt):
             # building_manager.buildings.remove(building)
 
 def render_world():
-    global building_manager, world, score, current_screen, gamestart
+    global building_manager, world, score, current_screen, gamestart, gameover
     clear_canvas()
     # 배경을 먼저 그림
     for obj in world:
         obj.draw()
     # 그 다음 건물을 그림 (배경 위에 표시)
-    if building_manager:
+    if building_manager and current_screen == gamestart:
         building_manager.draw()
 
     # 게임 플레이 중일 때만 점수 표시
@@ -123,11 +134,16 @@ def render_world():
         font = load_font('ENCR10B.TTF', 30)
         font.draw(20, SCREEN_H - 40, f'SCORE: {score}', (255, 255, 255))
 
+    # 게임오버 화면일 때 최종 점수 표시
+    if current_screen == gameover:
+        font = load_font('ENCR10B.TTF', 40)
+        font.draw(SCREEN_W // 2 - 120, SCREEN_H // 2, f'FINAL SCORE: {score}', (255, 0, 0))
+
     update_canvas()
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, character, weapon, x_pressed, combo_score
+    global running, current_screen, world, start_screen, menu, gamestart, gameover, character, weapon, x_pressed, combo_score, score, building_manager
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -148,6 +164,8 @@ def handle_events():
                 # gamestart로 진입하면 빌딩 낙하 시작 및 난이도 리셋
                 if building_manager:
                     building_manager.clear()  # 기존 건물 제거 및 난이도 리셋
+                score = 0  # 점수 초기화
+                combo_score = 100  # 콤보 점수 초기화
                 start_all_buildings()
                 continue
             if current_screen == gamestart and event.key == SDLK_r:
@@ -156,6 +174,15 @@ def handle_events():
                 # 게임 화면에서 나갈 때 건물 제거 및 난이도 리셋
                 if building_manager:
                     building_manager.clear()
+                continue
+            # 게임오버 화면에서 r키로 재시작
+            if current_screen == gameover and event.key == SDLK_r:
+                current_screen = menu
+                world = [current_screen]
+                if building_manager:
+                    building_manager.clear()
+                score = 0
+                combo_score = 100
                 continue
             # gamestart 화면에서만 캐릭터 조작 허용
             if current_screen == gamestart:
