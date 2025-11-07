@@ -58,6 +58,14 @@ class BuildingManager:
         self.buildings = []
         self.min_gap = min_gap  # 건물 간 최소 간격 (픽셀)
 
+        # 난이도 증가 관련
+        self.difficulty_timer = 0.0
+        self.difficulty_interval = 5.0  # 5초마다 난이도 증가
+        self.initial_spawn_interval = spawn_interval
+        self.initial_fall_speed = fall_speed
+        self.min_spawn_interval = 0.5  # 최소 스폰 간격
+        self.max_fall_speed = 500.0  # 최대 낙하 속도
+
     def _can_spawn(self, new_building):
         """새 건물이 기존 건물들과 겹치지 않는지 확인"""
         new_bb = new_building.get_bb()
@@ -73,9 +81,29 @@ class BuildingManager:
                 return False
         return True
 
+    def _increase_difficulty(self):
+        """난이도 증가: 스폰 간격 감소, 낙하 속도 증가"""
+        # 스폰 간격을 10% 감소 (최소값 제한)
+        self.spawn_interval = max(self.min_spawn_interval, self.spawn_interval * 0.9)
+
+        # 낙하 속도를 10% 증가 (최대값 제한)
+        self.fall_speed = min(self.max_fall_speed, self.fall_speed * 1.1)
+
+        # 기존 건물들의 낙하 속도도 업데이트
+        for building in self.buildings:
+            building.fall_speed = self.fall_speed
+
+        print(f"[난이도 증가] 스폰 간격: {self.spawn_interval:.2f}초, 낙하 속도: {self.fall_speed:.1f}")
+
     def update(self, dt, gamestart_active):
         # gamestart 상태일 때만 주기적으로 스폰
         if gamestart_active:
+            # 난이도 증가 타이머
+            self.difficulty_timer += dt
+            if self.difficulty_timer >= self.difficulty_interval:
+                self._increase_difficulty()
+                self.difficulty_timer = 0.0
+
             self.spawn_timer += dt
             while self.spawn_timer >= self.spawn_interval:
                 b = Building(self.spawn_x, self.spawn_y, self.fall_speed)
@@ -111,6 +139,9 @@ class BuildingManager:
     def clear(self):
         self.buildings.clear()
         self.spawn_timer = 0.0
+        self.difficulty_timer = 0.0  # 난이도 타이머도 리셋
+        self.spawn_interval = self.initial_spawn_interval  # 초기값으로 복원
+        self.fall_speed = self.initial_fall_speed  # 초기값으로 복원
 
     def destroy_building(self, building):
         """지정된 단일 빌딩을 리스트에서 제거

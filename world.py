@@ -145,12 +145,17 @@ def handle_events():
             if current_screen == menu and event.key == SDLK_s:
                 current_screen = gamestart
                 world = [current_screen, character,weapon]
-                # gamestart로 진입하면 빌딩 낙하 시작
+                # gamestart로 진입하면 빌딩 낙하 시작 및 난이도 리셋
+                if building_manager:
+                    building_manager.clear()  # 기존 건물 제거 및 난이도 리셋
                 start_all_buildings()
                 continue
             if current_screen == gamestart and event.key == SDLK_r:
                 current_screen = start_screen
                 world = [current_screen]
+                # 게임 화면에서 나갈 때 건물 제거 및 난이도 리셋
+                if building_manager:
+                    building_manager.clear()
                 continue
             # gamestart 화면에서만 캐릭터 조작 허용
             if current_screen == gamestart:
