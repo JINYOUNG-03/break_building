@@ -27,6 +27,7 @@ x_pressed = False
 score = 0  # 점수 추가
 combo_score = 100  # 콤보 점수 (연속 파괴 시 증가)
 game_time = 0  # 게임 시간 추가
+buildings_destroyed = 0  # 파괴된 건물 수 추가
 
 def reset_world():
     global running, start_screen, menu, gamestart, gameover, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score, game_time
@@ -67,7 +68,7 @@ def manual_spawn_building():
         building_manager.manual_spawn()
 
 def update_world(dt):
-    global building_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time
+    global building_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed
     game_time += dt  # 게임 시간 업데이트
 
     # world 객체들 업데이트
@@ -104,6 +105,7 @@ def update_world(dt):
                 combo_score += 10  # 다음 파괴 시 10점 더 증가
                 # 이번 attack_id에서 이미 히트했음을 기록
                 weapon.last_hit_attack_id = weapon.attack_id
+                buildings_destroyed += 1  # 파괴된 건물 수 증가
         elif weapon_collisions:
             # fallback: has_hit 플래그 사용
             if not getattr(weapon, 'has_hit', False):
@@ -113,6 +115,7 @@ def update_world(dt):
                 score += combo_score  # 콤보 점수만큼 증가
                 combo_score += 10  # 다음 파괴 시 10점 더 증가
                 weapon.has_hit = True
+                buildings_destroyed += 1  # 파괴된 건물 수 증가
 
         # 캐릭터-건물 충돌 검사
         character_collisions = CollisionManager.check_character_buildings(character, building_manager.buildings)
@@ -138,10 +141,11 @@ def render_world():
         # 게임 시간 텍스트 표시 (오른쪽 상단)
         font.draw(SCREEN_W - 200, SCREEN_H - 40, f'TIME: {int(game_time)}s', (255, 255, 255))
 
-    # 게임오버 화면일 때 최종 점수 표시
+    # 게임오버 화면일 때 최종 점수 및 파괴한 건물 수 표시
     if current_screen == gameover:
-        font = load_font('ENCR10B.TTF', 40)
-        font.draw(SCREEN_W // 2 - 120, SCREEN_H // 2, f'FINAL SCORE: {score}', (255, 0, 0))
+        font = load_font('ENCR10B.TTF', 30)
+        font.draw(SCREEN_W // 2 - 100, SCREEN_H // 2 + 130, f'Destroy buildings: {buildings_destroyed}', (255, 255, 0))
+        font.draw(SCREEN_W // 2 - 100, SCREEN_H // 2+ 30, f'FINAL SCORE: {score}', (255, 0, 0))
 
     update_canvas()
 
