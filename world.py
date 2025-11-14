@@ -68,6 +68,8 @@ def manual_spawn_building():
 
 def update_world(dt):
     global building_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time
+    game_time += dt  # 게임 시간 업데이트
+
     # world 객체들 업데이트
     for obj in world:
         try:
@@ -117,8 +119,6 @@ def update_world(dt):
         for building in character_collisions:
             # 전체 빌딩 리스트와 X키 상태를 전달
             collision_handler.handle_character_building_collision(character, building, building_manager.buildings, x_pressed)
-            # 충돌한 건물 제거 (옵션)
-            # building_manager.buildings.remove(building)
 
 def render_world():
     global building_manager, world, score, current_screen, gamestart, gameover, game_time
