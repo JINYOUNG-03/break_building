@@ -1,5 +1,4 @@
 from pico2d import *
-import random
 
 class Building:
     def __init__(self, x, y, fall_speed=200.0):
@@ -150,3 +149,9 @@ class BuildingManager:
             return True
         except ValueError:
             return False
+
+def draw_rectangle(x1, y1, x2, y2):
+    """사각형을 그리는 함수"""
+    draw_line(x1, y1, x2, y1)  # 아래쪽 선
+    draw_line(x2, y1, x2, y2)  # 오른쪽 선
+    draw_line(x2, y2, x1, y2)  # 위쪽 선
