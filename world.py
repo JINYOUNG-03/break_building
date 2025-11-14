@@ -26,9 +26,10 @@ building_manager = None
 x_pressed = False
 score = 0  # 점수 추가
 combo_score = 100  # 콤보 점수 (연속 파괴 시 증가)
+game_time = 0  # 게임 시간 추가
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score
+    global running, start_screen, menu, gamestart, gameover, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score, game_time
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -43,6 +44,7 @@ def reset_world():
     x_pressed = False
     score = 0  # 점수 초기화
     combo_score = 100  # 콤보 점수 초기화
+    game_time = 0  # 게임 시간 초기화
 
     # BuildingManager 초기화
     building_manager = BuildingManager(
@@ -65,7 +67,7 @@ def manual_spawn_building():
         building_manager.manual_spawn()
 
 def update_world(dt):
-    global building_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score
+    global building_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time
     # world 객체들 업데이트
     for obj in world:
         try:
@@ -119,7 +121,7 @@ def update_world(dt):
             # building_manager.buildings.remove(building)
 
 def render_world():
-    global building_manager, world, score, current_screen, gamestart, gameover
+    global building_manager, world, score, current_screen, gamestart, gameover, game_time
     clear_canvas()
     # 배경을 먼저 그림
     for obj in world:
@@ -128,11 +130,13 @@ def render_world():
     if building_manager and current_screen == gamestart:
         building_manager.draw()
 
-    # 게임 플레이 중일 때만 점수 표시
+    # 게임 플레이 중일 때만 점수 및 시간 표시
     if current_screen == gamestart:
         # 점수 텍스트 표시 (왼쪽 상단)
         font = load_font('ENCR10B.TTF', 30)
         font.draw(20, SCREEN_H - 40, f'SCORE: {score}', (255, 255, 255))
+        # 게임 시간 텍스트 표시 (오른쪽 상단)
+        font.draw(SCREEN_W - 200, SCREEN_H - 40, f'TIME: {int(game_time)}s', (255, 255, 255))
 
     # 게임오버 화면일 때 최종 점수 표시
     if current_screen == gameover:
