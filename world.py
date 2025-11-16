@@ -144,7 +144,7 @@ def render_world():
     # 게임오버 화면일 때 최종 점수 및 파괴한 건물 수 표시
     if current_screen == gameover:
         font = load_font('ENCR10B.TTF', 30)
-        font.draw(SCREEN_W // 2 - 100, SCREEN_H // 2 + 130, f'Destroy buildings: {buildings_destroyed}', (255, 255, 0))
+        font.draw(150, SCREEN_H // 2 + 130, f'Destroy buildings: {buildings_destroyed}', (255, 255, 0))
         font.draw(SCREEN_W // 2 - 100, SCREEN_H // 2+ 30, f'FINAL SCORE: {score}', (255, 0, 0))
 
     update_canvas()
