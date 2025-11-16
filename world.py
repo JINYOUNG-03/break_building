@@ -133,6 +133,10 @@ def render_world():
     if building_manager and current_screen == gamestart:
         building_manager.draw()
 
+    if current_screen == start_screen:
+        font = load_font('ENCR10B.TTF', 40)
+        font.draw(70, 170, 'Press M to start!', (255, 255, 255))
+
     # 게임 플레이 중일 때만 점수 및 시간 표시
     if current_screen == gamestart:
         # 점수 텍스트 표시 (왼쪽 상단)
