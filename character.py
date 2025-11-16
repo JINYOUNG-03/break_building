@@ -7,7 +7,6 @@ class Character:
     def __init__(self):
         self.char_img = [load_image(f'10.resource/Char1_1_idle_{i+1}.png') for i in range(4)]
         self.defense_img = [load_image('10.resource/Char1_1_def.png')]
-        self.defeat_img = load_image('10.resource/Char1_1_defeat.png')
 
         self.x, self.y = 540 / 2, 140
         self.frame = 0
