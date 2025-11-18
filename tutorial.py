@@ -9,14 +9,14 @@ class Tutorial:
 
         self.x, self.y = 540 / 2, 960 / 2
 
-        self.font = load_font('ENCR10B.TTF', 40)
-        self.title_font = load_font('ENCR10B.TTF', 60)
+        self.font = load_font('ENCR10B.TTF', 30)
+        self.title_font = load_font('ENCR10B.TTF', 50)
 
 
         # 버튼 영역 정의 (x, y, width, height)
         self.back_button = {
-            'x': 640,
-            'y': 100,
+            'x': 270,
+            'y': 150,
             'width': 200,
             'height': 80,
             'text': 'BACK'
@@ -25,7 +25,7 @@ class Tutorial:
     def draw(self):
         self.tuto_img.draw(self.x, self.y)
         # 제목
-        self.title_font.draw(640, 900, 'HOW TO PLAY', (255, 255, 255))
+        self.title_font.draw(120, 850, 'HOW TO PLAY', (255, 255, 255))
 
         # 조작 키 안내
         instructions = [
@@ -33,14 +33,13 @@ class Tutorial:
             ('X Key', 'Defense', 600),
             ('Left/A Key', 'Move Left', 500),
             ('Right/D Key', 'Move Right', 400),
-            ('R Key', 'Restart', 300),
         ]
 
         for key, action, y in instructions:
-            self.font.draw(400, y, f'{key}:', (255, 200, 0))
-            self.font.draw(700, y, action, (255, 255, 255))
+            self.font.draw(100, y, f'{key}:', (255, 200, 0))
+            self.font.draw(300, y, action, (255, 255, 255))
 
-        # Back 버튼
+        # Back 버튼 영역 표시
         btn = self.back_button
         draw_rectangle(
             btn['x'] - btn['width']//2,
@@ -48,7 +47,7 @@ class Tutorial:
             btn['x'] + btn['width']//2,
             btn['y'] + btn['height']//2
         )
-        self.font.draw(btn['x'], btn['y'], btn['text'], (255, 255, 255))
+        self.font.draw(btn['x'] - 40, btn['y'] - 10, btn['text'], (255, 255, 0))
 
         update_canvas()
 
