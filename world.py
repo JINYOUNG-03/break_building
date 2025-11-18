@@ -69,7 +69,8 @@ def manual_spawn_building():
 
 def update_world(dt):
     global building_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed
-    game_time += dt  # 게임 시간 업데이트
+    if current_screen == gamestart:
+        game_time += dt  # 게임 시간 업데이트
 
     # world 객체들 업데이트
     for obj in world:
@@ -150,6 +151,7 @@ def render_world():
         font = load_font('ENCR10B.TTF', 30)
         font.draw(150, SCREEN_H // 2 + 130, f'Destroy buildings: {buildings_destroyed}', (255, 255, 0))
         font.draw(SCREEN_W // 2 - 100, SCREEN_H // 2+ 30, f'FINAL SCORE: {score}', (255, 0, 0))
+        font.draw(160,430, f'Play time: {int(game_time//1)} seconds', (255, 255, 255))
 
     update_canvas()
 
