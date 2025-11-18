@@ -157,7 +157,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, gameover, character, weapon, x_pressed, combo_score, score, building_manager
+    global running, current_screen, world, start_screen, menu, gamestart, gameover, character, weapon, x_pressed, combo_score, score, building_manager, game_time, buildings_destroyed
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -180,6 +180,8 @@ def handle_events():
                     building_manager.clear()  # 기존 건물 제거 및 난이도 리셋
                 score = 0  # 점수 초기화
                 combo_score = 100  # 콤보 점수 초기화
+                game_time = 0
+                buildings_destroyed = 0
                 start_all_buildings()
                 continue
             if current_screen == gamestart and event.key == SDLK_r:
@@ -188,6 +190,8 @@ def handle_events():
                 # 게임 화면에서 나갈 때 건물 제거 및 난이도 리셋
                 if building_manager:
                     building_manager.clear()
+                game_time = 0
+                buildings_destroyed = 0
                 continue
             # 게임오버 화면에서 r키로 재시작
             if current_screen == gameover and event.key == SDLK_r:
@@ -197,6 +201,8 @@ def handle_events():
                     building_manager.clear()
                 score = 0
                 combo_score = 100
+                game_time = 0
+                buildings_destroyed = 0
                 continue
             # gamestart 화면에서만 캐릭터 조작 허용
             if current_screen == gamestart:
