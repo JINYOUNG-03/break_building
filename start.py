@@ -14,7 +14,7 @@ class Start:
         if self.active:
             self.start_img.draw(self.x, self.y)
             # 클릭 가능 영역 표시 (전체 화면)
-            self.font.draw(270, 200, 'Click anywhere to start', (255, 255, 255))
+            self.font.draw(65, 200, 'Click anywhere to start', (255, 255, 255))
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
