@@ -7,6 +7,7 @@ from gameover import GameOver
 from character import Character
 from weapon import Weapon
 from collision import CollisionManager, CollisionHandler
+from tutorial import Tutorial
 
 SCREEN_H=960
 SCREEN_W=540
@@ -16,6 +17,7 @@ start_screen = None
 menu = None
 gamestart = None
 gameover = None
+tutorial = None
 character = None
 weapon = None
 current_screen = None
@@ -30,12 +32,13 @@ game_time = 0  # 게임 시간 추가
 buildings_destroyed = 0  # 파괴된 건물 수 추가
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score, game_time
+    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score, game_time
     running = True
     start_screen = Start()
     menu = GameMenu()
     gamestart = GameStart()
     gameover = GameOver()
+    tutorial = Tutorial()
     character = Character()
     weapon = Weapon(owner=character)  # 캐릭터를 owner로 전달
     collision_handler = CollisionHandler()  # 충돌 핸들러 초기화
@@ -157,7 +160,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, gameover, character, weapon, x_pressed, combo_score, score, building_manager, game_time, buildings_destroyed
+    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, character, weapon, x_pressed, combo_score, score, building_manager, game_time, buildings_destroyed
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -166,43 +169,6 @@ def handle_events():
         if event.type == SDL_KEYDOWN:
             if event.key == SDLK_ESCAPE:
                 running = False
-                continue
-            # 화면 전환 단축키
-            if current_screen == start_screen and event.key == SDLK_m:
-                current_screen = menu
-                world = [current_screen]
-                continue
-            if current_screen == menu and event.key == SDLK_s:
-                current_screen = gamestart
-                world = [current_screen, character,weapon]
-                # gamestart로 진입하면 빌딩 낙하 시작 및 난이도 리셋
-                if building_manager:
-                    building_manager.clear()  # 기존 건물 제거 및 난이도 리셋
-                score = 0  # 점수 초기화
-                combo_score = 100  # 콤보 점수 초기화
-                game_time = 0
-                buildings_destroyed = 0
-                start_all_buildings()
-                continue
-            if current_screen == gamestart and event.key == SDLK_r:
-                current_screen = start_screen
-                world = [current_screen]
-                # 게임 화면에서 나갈 때 건물 제거 및 난이도 리셋
-                if building_manager:
-                    building_manager.clear()
-                game_time = 0
-                buildings_destroyed = 0
-                continue
-            # 게임오버 화면에서 r키로 재시작
-            if current_screen == gameover and event.key == SDLK_r:
-                current_screen = menu
-                world = [current_screen]
-                if building_manager:
-                    building_manager.clear()
-                score = 0
-                combo_score = 100
-                game_time = 0
-                buildings_destroyed = 0
                 continue
             # gamestart 화면에서만 캐릭터 조작 허용
             if current_screen == gamestart:
@@ -229,12 +195,62 @@ def handle_events():
                 x_pressed = False
             continue
         if event.type == SDL_MOUSEBUTTONDOWN:
-            x, y = event.x, SCREEN_H - event.y
-            print(f"Mouse down: ({x}, {y})")
-        elif event.type == SDL_MOUSEBUTTONUP:
-            x, y = event.x, SCREEN_H - event.y
-            print(f"Mouse up: ({x}, {y})")
-        elif event.type == SDL_MOUSEMOTION:
-            x, y = event.x, SCREEN_H - event.y
-            print(f"Mouse move: ({x}, {y})")
-            # 마우스 처리
+            mouse_x, mouse_y = event.x, SCREEN_H - event.y
+            print(f"Mouse click: ({mouse_x}, {mouse_y})")
+
+            # start_screen에서 클릭 처리
+            if current_screen == start_screen:
+                # start 버튼 클릭 시 menu로 이동
+                if hasattr(start_screen, 'check_button_click'):
+                    result = start_screen.check_button_click(mouse_x, mouse_y)
+                    if result == 'start':
+                        current_screen = menu
+                        world = [current_screen]
+                        continue
+
+            # menu에서 클릭 처리
+            elif current_screen == menu:
+                if hasattr(menu, 'check_button_click'):
+                    result = menu.check_button_click(mouse_x, mouse_y)
+                    if result == 'play':
+                        current_screen = gamestart
+                        world = [current_screen, character, weapon]
+                        if building_manager:
+                            building_manager.clear()
+                        score = 0
+                        combo_score = 100
+                        game_time = 0
+                        buildings_destroyed = 0
+                        start_all_buildings()
+                        continue
+                    elif result == 'tutorial':
+                        current_screen = tutorial
+                        world = [current_screen]
+                        continue
+                    elif result == 'quit':
+                        running = False
+                        continue
+
+            # tutorial에서 클릭 처리
+            elif current_screen == tutorial:
+                if hasattr(tutorial, 'check_button_click'):
+                    result = tutorial.check_button_click(mouse_x, mouse_y)
+                    if result == 'back':
+                        current_screen = menu
+                        world = [current_screen]
+                        continue
+
+            # gameover에서 클릭 처리
+            elif current_screen == gameover:
+                if hasattr(gameover, 'check_button_click'):
+                    result = gameover.check_button_click(mouse_x, mouse_y)
+                    if result == 'restart':
+                        current_screen = menu
+                        world = [current_screen]
+                        if building_manager:
+                            building_manager.clear()
+                        score = 0
+                        combo_score = 100
+                        game_time = 0
+                        buildings_destroyed = 0
+                        continue
