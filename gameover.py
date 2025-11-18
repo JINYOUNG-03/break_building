@@ -15,6 +15,11 @@ class GameOver:
         # 원하는 폭
         self.defeat_width = 100
 
+        self.font = load_font('ENCR10B.TTF', 30)
+
+        # 버튼 영역 정의
+        self.restart_button = {'x1': 170, 'y1': 200, 'x2': 370, 'y2': 280, 'text': 'RESTART'}
+
     def update(self):
         pass
 
@@ -27,6 +32,13 @@ class GameOver:
             w = self.defeat_width
             h = int(self.defeat_img.h * (w / self.defeat_img.w))
             self.defeat_img.draw(self.defeat_center_x, self.defeat_center_y, w, h)
+
+        # Restart 버튼 영역 표시
+        btn = self.restart_button
+        draw_rectangle(btn['x1'], btn['y1'], btn['x2'], btn['y2'])
+        center_x = (btn['x1'] + btn['x2']) // 2
+        center_y = (btn['y1'] + btn['y2']) // 2
+        self.font.draw(center_x - 50, center_y - 10, btn['text'], (255, 255, 0))
 
     def check_button_click(self, mouse_x, mouse_y):
         """
