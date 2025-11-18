@@ -18,3 +18,13 @@ class Start:
             self.active = False
             return True
         return False
+
+    def check_button_click(self, mouse_x, mouse_y):
+        """
+        마우스 클릭 시 화면 전체를 클릭 영역으로 처리
+        반환값: 'start' 또는 None
+        """
+        # 화면 어디든 클릭하면 시작
+        if 0 <= mouse_x <= 540 and 0 <= mouse_y <= 960:
+            return 'start'
+        return None
