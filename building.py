@@ -59,7 +59,7 @@ class BuildingManager:
 
         # 난이도 증가 관련
         self.difficulty_timer = 0.0
-        self.difficulty_interval = 5.0  # 5초마다 난이도 증가
+        self.difficulty_interval = 3.0  # 3초마다 난이도 증가
         self.initial_spawn_interval = spawn_interval
         self.initial_fall_speed = fall_speed
         self.min_spawn_interval = 0.5  # 최소 스폰 간격
