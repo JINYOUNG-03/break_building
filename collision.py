@@ -73,6 +73,7 @@ class CollisionHandler:
 
     def __init__(self):
         self.collision_count = 0  # 디버그용 충돌 카운트
+        self.push_speed = 300.0  # 빌딩을 위로 밀어올리는 속도 (pixels per second)
 
     def handle_weapon_building_collision(self, weapon, building):
         """
@@ -80,8 +81,7 @@ class CollisionHandler:
         건물에 데미지를 주거나 파괴 효과 등을 여기서 처리
         """
         self.collision_count += 1
-        print(f"[충돌] 무기가 건물을 공격! (총 {self.collision_count}회)")
-
+        # 디버그 출력 제거(필요하면 로깅으로 대체)
         # 여기에 건물 데미지 로직 추가
         # 예: building.take_damage(10)
         # 예: building.hp -= 10
@@ -91,7 +91,6 @@ class CollisionHandler:
     def _move_buildings_up(self, buildings, dy):
         """
         빌딩들을 화면에서 위로 dy 픽셀만큼 이동시킴.
-        다양한 빌딩 인터페이스를 지원:move(dx, dy), y 속성, get_bb/set_bb 등.
         dy는 양수(위로 이동시키는 픽셀 수)
         """
         if not buildings or dy <= 0:
@@ -158,22 +157,23 @@ class CollisionHandler:
             except Exception:
                 continue
 
-    def handle_character_building_collision(self, character, building, buildings=None, x_pressed=False):
+    def handle_character_building_collision(self, character, building, buildings=None, x_pressed=False, dt=0.0):
         """
         캐릭터-건물 충돌 처리
         - buildings: 전체 빌딩 리스트(있을 때 X키 누름 시 전체를 위로 이동)
         - x_pressed: X키가 눌렸는지 여부
+        - dt: 프레임 델타타임(초)
 
         반환값: 충돌로 인한 처리 발생 여부 (True/False)
         """
         # 방어 상태면 건물들이 위로 이동함
         if getattr(character, 'state', None) == 'defense':
             # X키가 눌렸고 전체 빌딩 리스트가 주어졌으면 빌딩들을 위로 이동
-            if x_pressed and buildings:
-                push_amount = 150  # 위로 이동 픽셀 수 (필요하면 조정)
+            if x_pressed and buildings and dt > 0:
+                # dt 기반 속도로 이동량 계산
+                push_amount = self.push_speed * dt
                 self._move_buildings_up(buildings, push_amount)
-                print(f"  → 방어 및 반격: 전체 빌딩을 위로 {push_amount} 이동")
                 return True
 
-            print("  → 방어 성공!")
+            # 방어 성공(하지만 이동 없음)
             return False

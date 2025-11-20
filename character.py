@@ -144,11 +144,6 @@ class Character:
         h = int(img.h * self.scale)
         img.draw(self.x, self.y, w, h)
 
-        # 바운딩 박스 그리기 (디버그용)
-        x1, y1, x2, y2 = self.get_bb()
-        draw_rectangle(x1, y1, x2, y2)
-
-
     def get_bb(self):
         """바운딩 박스 반환 (x1, y1, x2, y2)"""
         # 캐릭터 이미지 크기 계산

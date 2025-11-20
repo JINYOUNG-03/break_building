@@ -93,7 +93,6 @@ def update_world(dt):
             if building.y <= 110:
                 current_screen = gameover
                 world = [current_screen]
-                print(f"[게임오버] 최종 점수: {score}")
                 return
 
         # 무기-건물 충돌 검사
@@ -124,8 +123,8 @@ def update_world(dt):
         # 캐릭터-건물 충돌 검사
         character_collisions = CollisionManager.check_character_buildings(character, building_manager.buildings)
         for building in character_collisions:
-            # 전체 빌딩 리스트와 X키 상태를 전달
-            collision_handler.handle_character_building_collision(character, building, building_manager.buildings, x_pressed)
+            # 전체 빌딩 리스트와 X키 상태, dt를 전달
+            collision_handler.handle_character_building_collision(character, building, building_manager.buildings, x_pressed, dt)
 
 def render_world():
     global building_manager, world, score, current_screen, gamestart, gameover, game_time
@@ -193,7 +192,6 @@ def handle_events():
             continue
         if event.type == SDL_MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.x, SCREEN_H - event.y
-            print(f"Mouse click: ({mouse_x}, {mouse_y})")
 
             # start_screen에서 클릭 처리
             if current_screen == start_screen:

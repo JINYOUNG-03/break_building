@@ -206,8 +206,3 @@ class Weapon:
             else:
                 # idle, jump, defense는 작은 검 이미지
                 img.draw(self.x, self.y, self.idle_w, self.idle_h)
-
-        # 바운딩 박스 그리기 (디버그용)
-        x1, y1, x2, y2 = self.get_bb()
-        draw_rectangle(x1, y1, x2, y2)
-        draw_rectangle(x1, y1, x2, y2)
