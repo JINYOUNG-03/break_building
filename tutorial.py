@@ -15,6 +15,8 @@ class Tutorial:
         # 홈 아이콘 로드
         self.back_icon = load_image('10.resource/Button_07.png')  # Back to menu
 
+        self.attack_img = load_image('10.resource/attack_sword_04.png')
+
         # 버튼 영역 정의 (x, y, width, height)
         self.back_button = {
             'x': 270,
@@ -30,6 +32,7 @@ class Tutorial:
         # 제목
         self.title_font.draw(120, 850, 'HOW TO PLAY', (255, 255, 255))
 
+        self.attack_img.draw(450,730,200,100)
         # 조작 키 안내
         instructions = [
             ('Z Key', 'Attack', 700),
