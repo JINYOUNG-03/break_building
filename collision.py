@@ -73,7 +73,7 @@ class CollisionHandler:
 
     def __init__(self):
         self.collision_count = 0  # 디버그용 충돌 카운트
-        self.push_speed = 300.0  # 빌딩을 위로 밀어올리는 속도 (pixels per second)
+        self.push_speed = 8000.0  # 빌딩을 위로 밀어올리는 속도 (pixels per second) - 방어 시 빠르게 위로 이동
 
     def handle_weapon_building_collision(self, weapon, building):
         """
@@ -81,11 +81,6 @@ class CollisionHandler:
         건물에 데미지를 주거나 파괴 효과 등을 여기서 처리
         """
         self.collision_count += 1
-        # 디버그 출력 제거(필요하면 로깅으로 대체)
-        # 여기에 건물 데미지 로직 추가
-        # 예: building.take_damage(10)
-        # 예: building.hp -= 10
-
         return True
 
     def _move_buildings_up(self, buildings, dy):
