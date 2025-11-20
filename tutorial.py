@@ -15,8 +15,10 @@ class Tutorial:
         # 홈 아이콘 로드
         self.back_icon = load_image('10.resource/Button_07.png')  # Back to menu
 
+        # 공격 및 방어 아이콘 로드
         self.attack_img = load_image('10.resource/attack_sword_04.png')
-
+        self.defense_img = load_image('10.resource/Char1_1_def.png')
+        self.weapon_img = load_image('10.resource/1. Basic.png')
         # 버튼 영역 정의 (x, y, width, height)
         self.back_button = {
             'x': 270,
@@ -33,12 +35,14 @@ class Tutorial:
         self.title_font.draw(120, 850, 'HOW TO PLAY', (255, 255, 255))
 
         self.attack_img.draw(450,730,200,100)
+        self.defense_img.draw(460,620,100,100)
+        self.weapon_img.composite_draw(math.pi / 2, '', 460, 635, 24, 100)
         # 조작 키 안내
         instructions = [
             ('Z Key', 'Attack', 700),
             ('X Key', 'Defense', 600),
-            ('Left/A Key', 'Move Left', 500),
-            ('Right/D Key', 'Move Right', 400),
+            ('Left', 'Move Left', 500),
+            ('Right', 'Move Right', 400),
         ]
 
         for key, action, y in instructions:
