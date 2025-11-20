@@ -169,9 +169,9 @@ def handle_events():
                 continue
             # gamestart 화면에서만 캐릭터 조작 허용
             if current_screen == gamestart:
-                if event.key in (SDLK_LEFT, SDLK_a):
+                if event.key == SDLK_LEFT:
                     character.move_left()
-                elif event.key in (SDLK_RIGHT, SDLK_d):
+                elif event.key == SDLK_RIGHT:
                     character.move_right()
                 elif event.key == SDLK_b:
                     manual_spawn_building()
