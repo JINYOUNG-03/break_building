@@ -122,7 +122,7 @@ class CollisionHandler:
         # 이동 후 겹침 해소
         self._separate_overlapping_buildings(buildings)
 
-    def _separate_overlapping_buildings(self, buildings, min_gap=30):
+    def _separate_overlapping_buildings(self, buildings, min_gap=10):
         """겹친 건물들을 분리합니다"""
         if not buildings:
             return
