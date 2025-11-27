@@ -69,7 +69,7 @@ class Building:
 
 
 class BuildingManager:
-    def __init__(self, spawn_interval=1.0, spawn_x=270, spawn_y=1000, fall_speed=200.0, screen_bottom=0, min_gap=5):
+    def __init__(self, spawn_interval=1.0, spawn_x=270, spawn_y=1000, fall_speed=200.0, screen_bottom=0, min_gap=3):
         self.spawn_interval = spawn_interval
         self.spawn_timer = 0.0
         self.spawn_x = spawn_x
@@ -81,10 +81,10 @@ class BuildingManager:
 
         # 난이도 증가 관련
         self.difficulty_timer = 0.0
-        self.difficulty_interval = 3.0  # 3초마다 난이도 증가
+        self.difficulty_interval = 5.0  # 3초마다 난이도 증가
         self.initial_spawn_interval = spawn_interval
         self.initial_fall_speed = fall_speed
-        self.min_spawn_interval = 0.5  # 최소 스폰 간격
+        self.min_spawn_interval = 0.3  # 최소 스폰 간격
         self.max_fall_speed = 500.0  # 최대 낙하 속도
 
     def _can_spawn(self, new_building):
