@@ -67,7 +67,7 @@ class Missile:
 
 
 class MissileManager:
-    def __init__(self, spawn_interval=6.0, spawn_x_min=60, spawn_x_max=480, spawn_y=950, speed=300.0):
+    def __init__(self, spawn_interval=6.0, spawn_x_min=60, spawn_x_max=480, spawn_y=950, speed=400.0):
         self.spawn_interval = spawn_interval
         self.spawn_timer = 0.0
         self.spawn_x_min = spawn_x_min
