@@ -5,7 +5,7 @@ class Building:
         self.x = float(x)
         self.y = float(y)
         self.fall_speed = float(fall_speed)
-        self.falling = False
+        self.falling = True
         self.w = 540
         self.h = 50
         # 기본 이미지 (정상)
@@ -14,6 +14,10 @@ class Building:
         self.image_damaged = load_image('10.resource/building_2.png')
         # 데미지 상태 플래그 (False면 정상, True면 이미 한 번 공격당한 상태)
         self.damaged = False
+        # 방어로 튕겨진 후 일정 속도로 떨어지는지 플래그
+        self.pushed_by_defense = False
+        # 방어 후 떨어지는 속도 (일정한 값)
+        self.defense_fall_speed = 150.0
 
 
     def start_fall(self):
@@ -24,7 +28,11 @@ class Building:
 
     def update(self, dt=0.0):
         if self.falling and dt > 0:
-            self.y -= self.fall_speed * dt
+            if self.pushed_by_defense:
+                # 방어로 튕겨진 경우 일정 속도로만 떨어짐
+                self.y -= self.defense_fall_speed * dt
+            else:
+                self.y -= self.fall_speed * dt
 
     def draw(self):
         draw_x = int(round(self.x))
