@@ -6,26 +6,51 @@ class Missile:
         self.x = float(x)
         self.y = float(y)
         self.speed = float(speed)
+        # 기본 크기
         self.w = 40
         self.h = 80
-        # 이미지가 없으면 None으로 두고 사각형으로 대체
-        self.image = load_image('10.resource/attack_re_10.png')
 
+        # 애니메이션 프레임 로드 (missile1 ~ missile5)
+        self.frames = []
+        for i in range(1, 6):
+            img = load_image(f'10.resource/missile{i}.png')
+            self.frames.append(img)
+
+
+        # 애니메이션 제어
+        self.frame_index = 0
+        self.anim_acc = 0.0
+        self.anim_fps = 12.0  # 초당 프레임 수
+        self.frame_time = 1.0 / self.anim_fps
 
     def update(self, dt=0.0):
+        # 위치 업데이트
         if dt > 0:
             self.y -= self.speed * dt
+
+        # 애니메이션 진행
+        if self.has_frame_images and self.frame_time > 0:
+            self.anim_acc += dt
+            while self.anim_acc >= self.frame_time:
+                self.frame_index = (self.frame_index + 1) % len(self.frames)
+                self.anim_acc -= self.frame_time
 
     def draw(self):
         draw_x = int(round(self.x))
         draw_y = int(round(self.y))
-        if self.image:
-            self.image.draw(draw_x, draw_y, self.w, self.h)
-        else:
-            half_w = self.w / 2
-            half_h = self.h / 2
-            # 붉은색 사각형으로 미사일 표시
-            draw_rectangle(draw_x - half_w, draw_y - half_h, draw_x + half_w, draw_y + half_h)
+        if self.has_frame_images:
+            try:
+                img = self.frames[self.frame_index]
+                img.draw(draw_x, draw_y, self.w, self.h)
+                return
+            except Exception:
+                # 프레임 그리기 실패하면 폴백으로 사각형 그리기
+                pass
+
+        # 이미지가 없거나 그리기 실패한 경우
+        half_w = self.w / 2
+        half_h = self.h / 2
+        draw_rectangle(draw_x - half_w, draw_y - half_h, draw_x + half_w, draw_y + half_h)
 
     def get_bb(self):
         half_w = self.w / 2
@@ -73,6 +98,8 @@ class MissileManager:
         self.spawn_timer = 0.0
 
     def remove(self, missile):
-        self.missiles.remove(missile)
-        return True
-
+        try:
+            self.missiles.remove(missile)
+            return True
+        except ValueError:
+            return False
