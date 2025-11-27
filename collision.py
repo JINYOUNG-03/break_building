@@ -184,12 +184,16 @@ class CollisionHandler:
         """
         # 방어 상태면 건물들이 위로 이동함
         if getattr(character, 'state', None) == 'defense':
-            # X키가 눌렸고 전체 빌딩 리스트가 주어졌으면 빌딩들을 위로 이동
-            if x_pressed and buildings and dt > 0:
-                # dt 기반 속도로 이동량 계산
-                push_amount = self.push_speed * dt
-                self._move_buildings_up(buildings, push_amount)
+            # X키가 눌렸고, 충돌한 건물이 아직 방어로 튕겨지지 않았다면 한 번만 위로 밀어올림
+            if x_pressed and not getattr(building, 'pushed_by_defense', False):
+                # 위로 밀어올릴 양 (픽셀)
+                push_amount = 100.0  # 고정된 양만큼 위로 튕겨냄
+                building.y += push_amount
+                # 방어로 튕겨진 상태로 설정
+                building.pushed_by_defense = True
                 return True
 
             # 방어 성공(하지만 이동 없음)
             return False
+
+        return False
