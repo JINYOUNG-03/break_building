@@ -79,8 +79,19 @@ def manual_spawn_building():
     if building_manager:
         building_manager.manual_spawn()
 
+def manual_spawn_missile():
+    """m키로 수동 미사일 스폰"""
+    global missile_manager
+    if missile_manager:
+        import random
+        x = random.uniform(missile_manager.spawn_x_min, missile_manager.spawn_x_max)
+        from missile import Missile
+        m = Missile(x, missile_manager.spawn_y, missile_manager.speed)
+        missile_manager.missiles.append(m)
+        print(f"[Manual] Spawned missile at x={x}, y={missile_manager.spawn_y}")
+
 def update_world(dt):
-    global building_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed
+    global building_manager, missile_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed
     if current_screen == gamestart:
         game_time += dt  # 게임 시간 업데이트
 
@@ -94,6 +105,7 @@ def update_world(dt):
     # building_manager 업데이트
     if building_manager:
         building_manager.update(dt, current_screen == gamestart)
+
     # missile_manager 업데이트
     if missile_manager:
         missile_manager.update(dt, current_screen == gamestart)
@@ -143,11 +155,10 @@ def update_world(dt):
             # 전체 빌딩 리스트와 X키 상태, dt를 전달
             collision_handler.handle_character_building_collision(character, building, building_manager.buildings, x_pressed, dt)
 
-        # 미사일-캐릭터 충돌 검사: 충돌하면 게임오버
-        if missile_manager and character:
+        # 미사일-캐릭터 충돌 검사
+        if missile_manager:
             collided_missiles = CollisionManager.check_missiles_character(missile_manager.missiles, character)
             if collided_missiles:
-                # 충돌한 첫 미사일 처리(필요시 제거)
                 try:
                     missile_manager.remove(collided_missiles[0])
                 except Exception:
@@ -157,7 +168,7 @@ def update_world(dt):
                 return
 
 def render_world():
-    global building_manager, world, score, current_screen, gamestart, gameover, game_time
+    global building_manager, missile_manager, world, score, current_screen, gamestart, gameover, game_time
     clear_canvas()
     # 배경을 먼저 그림
     for obj in world:
@@ -165,9 +176,11 @@ def render_world():
     # 그 다음 건물을 그림 (배경 위에 표시)
     if building_manager and current_screen == gamestart:
         building_manager.draw()
+
     # 미사일 그리기
     if missile_manager and current_screen == gamestart:
         missile_manager.draw()
+
 
     # 게임 플레이 중일 때만 점수 및 시간 표시
     if current_screen == gamestart:
@@ -188,7 +201,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, character, weapon, x_pressed, combo_score, score, building_manager, game_time, buildings_destroyed
+    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, character, weapon, x_pressed, combo_score, score, building_manager, missile_manager, game_time, buildings_destroyed
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -206,6 +219,8 @@ def handle_events():
                     character.move_right()
                 elif event.key == SDLK_b:
                     manual_spawn_building()
+                elif event.key == SDLK_m:  # m키로 미사일 수동 스폰
+                    manual_spawn_missile()
                 elif event.key == SDLK_z:
                     character.attack()
                     weapon.attack()
