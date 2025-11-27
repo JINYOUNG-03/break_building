@@ -103,22 +103,27 @@ def update_world(dt):
                 # 첫 충돌 객체 하나만 처리
                 b = weapon_collisions[0]
                 collision_handler.handle_weapon_building_collision(weapon, b)
-                building_manager.destroy_building(b)
-                score += combo_score  # 콤보 점수만큼 증가
-                combo_score += 10  # 다음 파괴 시 10점 더 증가
+                # 건물에 히트 처리: 첫 히트는 손상 이미지로 변경, 두 번째는 파괴
+                destroyed = b.hit()
+                if destroyed:
+                    building_manager.destroy_building(b)
+                    score += combo_score  # 콤보 점수만큼 증가
+                    combo_score += 10  # 다음 파괴 시 10점 더 증가
+                    buildings_destroyed += 1  # 파괴된 건물 수 증가
                 # 이번 attack_id에서 이미 히트했음을 기록
                 weapon.last_hit_attack_id = weapon.attack_id
-                buildings_destroyed += 1  # 파괴된 건물 수 증가
         elif weapon_collisions:
             # fallback: has_hit 플래그 사용
             if not getattr(weapon, 'has_hit', False):
                 b = weapon_collisions[0]
                 collision_handler.handle_weapon_building_collision(weapon, b)
-                building_manager.destroy_building(b)
-                score += combo_score  # 콤보 점수만큼 증가
-                combo_score += 10  # 다음 파괴 시 10점 더 증가
+                destroyed = b.hit()
+                if destroyed:
+                    building_manager.destroy_building(b)
+                    score += combo_score  # 콤보 점수만큼 증가
+                    combo_score += 10  # 다음 파괴 시 10점 더 증가
+                    buildings_destroyed += 1  # 파괴된 건물 수 증가
                 weapon.has_hit = True
-                buildings_destroyed += 1  # 파괴된 건물 수 증가
 
         # 캐릭터-건물 충돌 검사
         character_collisions = CollisionManager.check_character_buildings(character, building_manager.buildings)
