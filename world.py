@@ -8,6 +8,7 @@ from character import Character
 from weapon import Weapon
 from collision import CollisionManager, CollisionHandler
 from tutorial import Tutorial
+from missile import MissileManager
 
 SCREEN_H=960
 SCREEN_W=540
@@ -25,6 +26,7 @@ world = []
 buildings = []
 collision_handler = None
 building_manager = None
+missile_manager = None
 x_pressed = False
 score = 0  # 점수 추가
 combo_score = 100  # 콤보 점수 (연속 파괴 시 증가)
@@ -32,7 +34,7 @@ game_time = 0  # 게임 시간 추가
 buildings_destroyed = 0  # 파괴된 건물 수 추가
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, x_pressed, score, combo_score, game_time
+    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, x_pressed, score, combo_score, game_time
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -42,6 +44,13 @@ def reset_world():
     character = Character()
     weapon = Weapon(owner=character)  # 캐릭터를 owner로 전달
     collision_handler = CollisionHandler()  # 충돌 핸들러 초기화
+    missile_manager = MissileManager(
+        spawn_interval=6.0,
+        spawn_x_min=60,
+        spawn_x_max=480,
+        spawn_y=950,
+        speed=300.0
+    )
     current_screen = start_screen
     world = [current_screen]
     buildings = []
@@ -85,6 +94,9 @@ def update_world(dt):
     # building_manager 업데이트
     if building_manager:
         building_manager.update(dt, current_screen == gamestart)
+    # missile_manager 업데이트
+    if missile_manager:
+        missile_manager.update(dt, current_screen == gamestart)
 
     # 게임 플레이 중일 때만 충돌 검사 및 게임오버 체크
     if current_screen == gamestart and building_manager and collision_handler and weapon and character:
@@ -131,6 +143,19 @@ def update_world(dt):
             # 전체 빌딩 리스트와 X키 상태, dt를 전달
             collision_handler.handle_character_building_collision(character, building, building_manager.buildings, x_pressed, dt)
 
+        # 미사일-캐릭터 충돌 검사: 충돌하면 게임오버
+        if missile_manager and character:
+            collided_missiles = CollisionManager.check_missiles_character(missile_manager.missiles, character)
+            if collided_missiles:
+                # 충돌한 첫 미사일 처리(필요시 제거)
+                try:
+                    missile_manager.remove(collided_missiles[0])
+                except Exception:
+                    pass
+                current_screen = gameover
+                world = [current_screen]
+                return
+
 def render_world():
     global building_manager, world, score, current_screen, gamestart, gameover, game_time
     clear_canvas()
@@ -140,7 +165,9 @@ def render_world():
     # 그 다음 건물을 그림 (배경 위에 표시)
     if building_manager and current_screen == gamestart:
         building_manager.draw()
-
+    # 미사일 그리기
+    if missile_manager and current_screen == gamestart:
+        missile_manager.draw()
 
     # 게임 플레이 중일 때만 점수 및 시간 표시
     if current_screen == gamestart:
@@ -217,6 +244,8 @@ def handle_events():
                         world = [current_screen, character, weapon]
                         if building_manager:
                             building_manager.clear()
+                        if missile_manager:
+                            missile_manager.clear()
                         score = 0
                         combo_score = 100
                         game_time = 0
@@ -249,6 +278,8 @@ def handle_events():
                         world = [current_screen]
                         if building_manager:
                             building_manager.clear()
+                        if missile_manager:
+                            missile_manager.clear()
                         score = 0
                         combo_score = 100
                         game_time = 0

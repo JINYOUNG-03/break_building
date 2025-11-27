@@ -67,6 +67,27 @@ class CollisionManager:
                 collided_buildings.append(building)
         return collided_buildings
 
+    @staticmethod
+    def check_missile_character(missile, character):
+        """
+        단일 미사일과 캐릭터의 충돌 검사
+        """
+        if not missile:
+            return False
+        return CollisionManager.check_collision(missile.get_bb(), character.get_bb())
+
+    @staticmethod
+    def check_missiles_character(missiles, character):
+        """
+        여러 미사일과 캐릭터의 충돌 검사
+        충돌한 미사일 리스트 반환
+        """
+        collided = []
+        for m in missiles:
+            if CollisionManager.check_missile_character(m, character):
+                collided.append(m)
+        return collided
+
 
 class CollisionHandler:
     """충돌 발생 시 처리를 담당하는 클래스"""
