@@ -8,7 +8,12 @@ class Building:
         self.falling = False
         self.w = 540
         self.h = 50
+        # 기본 이미지 (정상)
         self.image = load_image('10.resource/building_1.png')
+        # 손상된 이미지
+        self.image_damaged = load_image('10.resource/building_2.png')
+        # 데미지 상태 플래그 (False면 정상, True면 이미 한 번 공격당한 상태)
+        self.damaged = False
 
 
     def start_fall(self):
@@ -37,6 +42,7 @@ class Building:
         # 바운딩 박스 그리기 (디버그용)
         x1, y1, x2, y2 = self.get_bb()
         draw_rectangle(x1, y1, x2, y2)
+
     def is_offscreen(self, screen_bottom=0):
         return (self.y + self.h / 2) < screen_bottom
 
@@ -44,6 +50,22 @@ class Building:
         half_w = self.w / 2
         half_h = self.h / 2
         return self.x - half_w, self.y - half_h + 15, self.x + half_w, self.y + half_h
+
+    def hit(self):
+        """
+        건물이 공격을 받을 때 호출.
+        - 처음 맞으면 이미지가 손상된 이미지로 바뀌고 False 반환(파괴 아님)
+        - 이미 손상된 상태에서 맞으면 True 반환(파괴되어 제거되어야 함)
+        """
+        # 이미 손상된 상태 -> 파괴
+        if self.damaged:
+            return True
+
+        # 아직 손상되지 않았다면 손상 처리
+        self.damaged = True
+        if getattr(self, 'image_damaged', None):
+            self.image = self.image_damaged
+        return False
 
 
 class BuildingManager:
