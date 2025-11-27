@@ -13,15 +13,18 @@ class Missile:
         # 애니메이션 프레임 로드 (missile1 ~ missile5)
         self.frames = []
         for i in range(1, 6):
-            img = load_image(f'10.resource/missile{i}.png')
-            self.frames.append(img)
-
+            try:
+                img = load_image(f'10.resource/missile{i}.png')
+                self.frames.append(img)
+            except Exception as e:
+                pass
 
         # 애니메이션 제어
         self.frame_index = 0
         self.anim_acc = 0.0
         self.anim_fps = 12.0  # 초당 프레임 수
         self.frame_time = 1.0 / self.anim_fps
+        self.has_frame_images = len(self.frames) > 0
 
     def update(self, dt=0.0):
         # 위치 업데이트
@@ -38,19 +41,20 @@ class Missile:
     def draw(self):
         draw_x = int(round(self.x))
         draw_y = int(round(self.y))
-        if self.has_frame_images:
-            try:
-                img = self.frames[self.frame_index]
-                img.draw(draw_x, draw_y, self.w, self.h)
-                return
-            except Exception:
-                # 프레임 그리기 실패하면 폴백으로 사각형 그리기
-                pass
 
-        # 이미지가 없거나 그리기 실패한 경우
-        half_w = self.w / 2
-        half_h = self.h / 2
-        draw_rectangle(draw_x - half_w, draw_y - half_h, draw_x + half_w, draw_y + half_h)
+        # 이미지가 있으면 그리기
+        if self.has_frame_images:
+            img = self.frames[self.frame_index]
+            img.draw(draw_x, draw_y, self.w, self.h)
+        else:
+            # 이미지가 없을 때 폴백 (사각형)
+            half_w = self.w / 2
+            half_h = self.h / 2
+            draw_rectangle(draw_x - half_w, draw_y - half_h, draw_x + half_w, draw_y + half_h)
+
+        # 바운딩 박스 그리기(디버그)
+        x1, y1, x2, y2 = self.get_bb()
+        draw_rectangle(x1, y1, x2, y2)
 
     def get_bb(self):
         half_w = self.w / 2
