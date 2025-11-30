@@ -9,6 +9,7 @@ from weapon import Weapon
 from collision import CollisionManager, CollisionHandler
 from tutorial import Tutorial
 from missile import MissileManager
+from fragment import FragmentManager
 
 SCREEN_H=960
 SCREEN_W=540
@@ -27,6 +28,7 @@ buildings = []
 collision_handler = None
 building_manager = None
 missile_manager = None
+fragment_manager = None
 x_pressed = False
 score = 0  # 점수 추가
 combo_score = 100  # 콤보 점수 (연속 파괴 시 증가)
@@ -40,7 +42,7 @@ current_music = None  # 현재 재생 중인 음악
 destruct_sound = None  # 건물 파괴 효과음
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, x_pressed, score, combo_score, game_time, combo_count, combo_images, buildings_destroyed, menu_music, gameplay_music, current_music, destruct_sound
+    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, fragment_manager, x_pressed, score, combo_score, game_time, combo_count, combo_images, buildings_destroyed, menu_music, gameplay_music, current_music, destruct_sound
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -57,6 +59,7 @@ def reset_world():
         spawn_y=950,
         speed=300.0
     )
+    fragment_manager = FragmentManager()  # 파편 매니저 초기화
     current_screen = start_screen
     world = [current_screen]
     buildings = []
@@ -138,7 +141,7 @@ def manual_spawn_missile():
         print(f"[Manual] Spawned missile at x={x}, y={missile_manager.spawn_y}")
 
 def update_world(dt):
-    global building_manager, missile_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed, combo_count, destruct_sound
+    global building_manager, missile_manager, fragment_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed, combo_count, destruct_sound
     if current_screen == gamestart:
         game_time += dt  # 게임 시간 업데이트
 
@@ -156,6 +159,10 @@ def update_world(dt):
     # missile_manager 업데이트
     if missile_manager:
         missile_manager.update(dt, current_screen == gamestart)
+
+    # fragment_manager 업데이트
+    if fragment_manager and current_screen == gamestart:
+        fragment_manager.update(dt)
 
     # 게임 플레이 중일 때만 충돌 검사 및 게임오버 체크
     if current_screen == gamestart and building_manager and collision_handler and weapon and character:
@@ -177,6 +184,9 @@ def update_world(dt):
                 # 건물에 히트 처리: 첫 히트는 손상 이미지로 변경, 두 번째는 파괴
                 destroyed = b.hit()
                 if destroyed:
+                    # 파편 생성 (건물 위치에서)
+                    if fragment_manager:
+                        fragment_manager.create_fragments(b.x, b.y, count=5)
                     building_manager.destroy_building(b)
                     if destruct_sound:
                         destruct_sound.play()  # 건물 파괴 효과음 재생
@@ -193,6 +203,9 @@ def update_world(dt):
                 collision_handler.handle_weapon_building_collision(weapon, b)
                 destroyed = b.hit()
                 if destroyed:
+                    # 파편 생성 (건물 위치에서)
+                    if fragment_manager:
+                        fragment_manager.create_fragments(b.x, b.y, count=5)
                     building_manager.destroy_building(b)
                     if destruct_sound:
                         destruct_sound.play()  # 건물 파괴 효과음 재생
@@ -221,7 +234,7 @@ def update_world(dt):
                 return
 
 def render_world():
-    global building_manager, missile_manager, world, score, current_screen, gamestart, gameover, game_time, combo_count, combo_images
+    global building_manager, missile_manager, fragment_manager, world, score, current_screen, gamestart, gameover, game_time, combo_count, combo_images
     clear_canvas()
     # 배경을 먼저 그림
     for obj in world:
@@ -233,6 +246,10 @@ def render_world():
     # 미사일 그리기
     if missile_manager and current_screen == gamestart:
         missile_manager.draw()
+
+    # 파편 그리기
+    if fragment_manager and current_screen == gamestart:
+        fragment_manager.draw()
 
 
     # 게임 플레이 중일 때만 점수 및 시간 표시
@@ -338,6 +355,8 @@ def handle_events():
                             building_manager.clear()
                         if missile_manager:
                             missile_manager.clear()
+                        if fragment_manager:
+                            fragment_manager.clear()
                         score = 0
                         switch_music('gameplay')  # 게임플레이 음악으로 전환
                         combo_score = 100
@@ -374,6 +393,8 @@ def handle_events():
                             building_manager.clear()
                         if missile_manager:
                             missile_manager.clear()
+                        if fragment_manager:
+                            fragment_manager.clear()
                         score = 0
                         combo_score = 100
                         game_time = 0
