@@ -32,9 +32,11 @@ score = 0  # 점수 추가
 combo_score = 100  # 콤보 점수 (연속 파괴 시 증가)
 game_time = 0  # 게임 시간 추가
 buildings_destroyed = 0  # 파괴된 건물 수 추가
+combo_count = 0  # 콤보 카운트 (시각적으로 표시할 숫자)
+combo_images = None  # 콤보 숫자 이미지들
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, x_pressed, score, combo_score, game_time
+    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, x_pressed, score, combo_score, game_time, combo_count, combo_images, buildings_destroyed
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -58,6 +60,12 @@ def reset_world():
     score = 0  # 점수 초기화
     combo_score = 100  # 콤보 점수 초기화
     game_time = 0  # 게임 시간 초기화
+    combo_count = 0  # 콤보 카운트 초기화
+    buildings_destroyed = 0  # 파괴된 건물 수 초기화
+
+    # 콤보 숫자 이미지 로드 (1~9, 10)
+    combo_images = [load_image(f'7.icon/icon png 파일/damage1_0{i}.png') for i in range(1, 10)]
+    combo_images.append(load_image('7.icon/icon png 파일/damage1_10.png'))  # 10번 이미지
 
     # BuildingManager 초기화
     building_manager = BuildingManager(
@@ -91,7 +99,7 @@ def manual_spawn_missile():
         print(f"[Manual] Spawned missile at x={x}, y={missile_manager.spawn_y}")
 
 def update_world(dt):
-    global building_manager, missile_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed
+    global building_manager, missile_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed, combo_count
     if current_screen == gamestart:
         game_time += dt  # 게임 시간 업데이트
 
@@ -134,6 +142,7 @@ def update_world(dt):
                     score += combo_score  # 콤보 점수만큼 증가
                     combo_score += 10  # 다음 파괴 시 10점 더 증가
                     buildings_destroyed += 1  # 파괴된 건물 수 증가
+                    combo_count += 1  # 콤보 카운트 증가
                 # 이번 attack_id에서 이미 히트했음을 기록
                 weapon.last_hit_attack_id = weapon.attack_id
         elif weapon_collisions:
@@ -147,6 +156,7 @@ def update_world(dt):
                     score += combo_score  # 콤보 점수만큼 증가
                     combo_score += 10  # 다음 파괴 시 10점 더 증가
                     buildings_destroyed += 1  # 파괴된 건물 수 증가
+                    combo_count += 1  # 콤보 카운트 증가
                 weapon.has_hit = True
 
         # 캐릭터-건물 충돌 검사
@@ -168,7 +178,7 @@ def update_world(dt):
                 return
 
 def render_world():
-    global building_manager, missile_manager, world, score, current_screen, gamestart, gameover, game_time
+    global building_manager, missile_manager, world, score, current_screen, gamestart, gameover, game_time, combo_count, combo_images
     clear_canvas()
     # 배경을 먼저 그림
     for obj in world:
@@ -190,6 +200,14 @@ def render_world():
         # 게임 시간 텍스트 표시 (오른쪽 상단)
         font.draw(SCREEN_W - 200, SCREEN_H - 40, f'TIME: {int(game_time)}s', (255, 255, 255))
 
+        # 콤보 카운트 이미지 표시 (캐릭터 오른쪽 위)
+        if combo_count > 0 and combo_images and character:
+            # 콤보가 10 이상이면 10으로 표시
+            display_combo = min(combo_count, 10)
+            combo_img = combo_images[display_combo - 1]  # 1~10 -> 인덱스 0~9
+            # 캐릭터 위치 기준으로 오른쪽 위에 표시
+            combo_img.draw(character.x + 60, character.y + 80)
+
     # 게임오버 화면일 때 최종 점수 및 파괴한 건물 수 표시
     if current_screen == gameover:
         font = load_font('ENCR10B.TTF', 30)
@@ -201,7 +219,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, character, weapon, x_pressed, combo_score, score, building_manager, missile_manager, game_time, buildings_destroyed
+    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, character, weapon, x_pressed, combo_score, score, building_manager, missile_manager, game_time, buildings_destroyed, combo_count
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -230,6 +248,7 @@ def handle_events():
                     character.defend()
                     weapon.defend()
                     combo_score = 100  # 방어 상태로 전환 시 콤보 점수 리셋
+                    combo_count = 0  # 방어 시 콤보 카운트 0으로 초기화
                 continue
             # 다른 화면에서 처리할 키가 있으면 여기 추가
         if event.type == SDL_KEYUP:
@@ -265,6 +284,7 @@ def handle_events():
                         combo_score = 100
                         game_time = 0
                         buildings_destroyed = 0
+                        combo_count = 0  # 콤보 카운트 초기화
                         start_all_buildings()
                         continue
                     elif result == 'tutorial':
@@ -299,4 +319,5 @@ def handle_events():
                         combo_score = 100
                         game_time = 0
                         buildings_destroyed = 0
+                        combo_count = 0  # 콤보 카운트 초기화
                         continue
