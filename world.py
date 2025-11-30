@@ -73,7 +73,7 @@ def reset_world():
 
     # 배경음악 로드
     menu_music = load_music('10.resource/menu.wav')
-    # gameplay_music = load_music('10.resource/gameplay.wav')  # 게임플레이 음악 파일이 있으면 활성화
+    gameplay_music = load_music('10.resource/gameplay.wav')  # 게임플레이 음악 파일이 있으면 활성화
 
     # 메뉴 음악 재생 (무한 반복)
     menu_music.set_volume(64)
@@ -159,7 +159,6 @@ def update_world(dt):
             if building.y <= 110:
                 current_screen = gameover
                 world = [current_screen]
-                switch_music('menu')  # 게임오버 시 메뉴 음악으로 전환
                 return
 
         # 무기-건물 충돌 검사
@@ -209,7 +208,6 @@ def update_world(dt):
                 except Exception:
                     pass
                 current_screen = gameover
-                switch_music('menu')  # 게임오버 시 메뉴 음악으로 전환
                 world = [current_screen]
                 return
 
