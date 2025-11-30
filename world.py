@@ -63,9 +63,10 @@ def reset_world():
     combo_count = 0  # 콤보 카운트 초기화
     buildings_destroyed = 0  # 파괴된 건물 수 초기화
 
-    # 콤보 숫자 이미지 로드 (1~9, 10)
-    combo_images = [load_image(f'7.icon/icon png 파일/damage1_0{i}.png') for i in range(1, 10)]
-    combo_images.append(load_image('7.icon/icon png 파일/damage1_10.png'))  # 10번 이미지
+    # 콤보 숫자 이미지 로드 (0~9)
+    # damage1_01.png = 0, damage1_02.png = 1, ..., damage1_10.png = 9
+    combo_images = [load_image(f'10.resource/damage1_0{i}.png') for i in range(1, 10)]
+    combo_images.append(load_image('10.resource/damage1_10.png'))  # 9번 이미지
 
     # BuildingManager 초기화
     building_manager = BuildingManager(
@@ -202,11 +203,26 @@ def render_world():
 
         # 콤보 카운트 이미지 표시 (캐릭터 오른쪽 위)
         if combo_count > 0 and combo_images and character:
-            # 콤보가 10 이상이면 10으로 표시
-            display_combo = min(combo_count, 10)
-            combo_img = combo_images[display_combo - 1]  # 1~10 -> 인덱스 0~9
-            # 캐릭터 위치 기준으로 오른쪽 위에 표시
-            combo_img.draw(character.x + 60, character.y + 80)
+            # 두 자리수 표현: 99까지 표시 가능
+            display_combo = min(combo_count, 99)
+
+            if display_combo < 10:
+                # 한 자리수: 해당 숫자 이미지 하나만 표시
+                # combo_count 1 -> 인덱스 1 (damage1_02.png)
+                combo_img = combo_images[display_combo]
+                combo_img.draw(character.x + 60, character.y + 80)
+            else:
+                # 두 자리수: 십의 자리와 일의 자리를 각각 표시
+                tens_digit = display_combo // 10
+                ones_digit = display_combo % 10
+
+                # 십의 자리 숫자
+                tens_img = combo_images[tens_digit]
+                tens_img.draw(character.x + 40, character.y + 80)
+
+                # 일의 자리 숫자
+                ones_img = combo_images[ones_digit]
+                ones_img.draw(character.x + 80, character.y + 80)
 
     # 게임오버 화면일 때 최종 점수 및 파괴한 건물 수 표시
     if current_screen == gameover:
