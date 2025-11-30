@@ -34,9 +34,12 @@ game_time = 0  # 게임 시간 추가
 buildings_destroyed = 0  # 파괴된 건물 수 추가
 combo_count = 0  # 콤보 카운트 (시각적으로 표시할 숫자)
 combo_images = None  # 콤보 숫자 이미지들
+menu_music = None  # 메뉴 배경음악
+gameplay_music = None  # 게임플레이 배경음악
+current_music = None  # 현재 재생 중인 음악
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, x_pressed, score, combo_score, game_time, combo_count, combo_images, buildings_destroyed
+    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, x_pressed, score, combo_score, game_time, combo_count, combo_images, buildings_destroyed, menu_music, gameplay_music, current_music
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -68,6 +71,15 @@ def reset_world():
     combo_images = [load_image(f'10.resource/damage1_0{i}.png') for i in range(1, 10)]
     combo_images.append(load_image('10.resource/damage1_10.png'))  # 9번 이미지
 
+    # 배경음악 로드
+    menu_music = load_music('10.resource/menu.wav')
+    # gameplay_music = load_music('10.resource/gameplay.wav')  # 게임플레이 음악 파일이 있으면 활성화
+
+    # 메뉴 음악 재생 (무한 반복)
+    menu_music.set_volume(64)
+    menu_music.repeat_play()
+    current_music = 'menu'
+
     # BuildingManager 초기화
     building_manager = BuildingManager(
         spawn_interval=1.5,
@@ -76,6 +88,27 @@ def reset_world():
         fall_speed=200.0,
         screen_bottom=0
     )
+
+def switch_music(music_type):
+    """배경음악 전환 함수"""
+    global menu_music, gameplay_music, current_music
+
+    if current_music == music_type:
+        return  # 이미 재생 중이면 아무것도 하지 않음
+
+    # 모든 음악 정지
+    if menu_music:
+        menu_music.stop()
+    if gameplay_music:
+        gameplay_music.stop()
+
+    # 새로운 음악 재생
+    if music_type == 'menu' and menu_music:
+        menu_music.repeat_play()
+        current_music = 'menu'
+    elif music_type == 'gameplay' and gameplay_music:
+        gameplay_music.repeat_play()
+        current_music = 'gameplay'
 
 def start_all_buildings():
     global building_manager
@@ -126,6 +159,7 @@ def update_world(dt):
             if building.y <= 110:
                 current_screen = gameover
                 world = [current_screen]
+                switch_music('menu')  # 게임오버 시 메뉴 음악으로 전환
                 return
 
         # 무기-건물 충돌 검사
@@ -175,6 +209,7 @@ def update_world(dt):
                 except Exception:
                     pass
                 current_screen = gameover
+                switch_music('menu')  # 게임오버 시 메뉴 음악으로 전환
                 world = [current_screen]
                 return
 
@@ -297,6 +332,7 @@ def handle_events():
                         if missile_manager:
                             missile_manager.clear()
                         score = 0
+                        switch_music('gameplay')  # 게임플레이 음악으로 전환
                         combo_score = 100
                         game_time = 0
                         buildings_destroyed = 0
@@ -336,4 +372,5 @@ def handle_events():
                         game_time = 0
                         buildings_destroyed = 0
                         combo_count = 0  # 콤보 카운트 초기화
+                        switch_music('menu')  # 메뉴 음악으로 전환
                         continue
