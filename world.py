@@ -37,9 +37,10 @@ combo_images = None  # 콤보 숫자 이미지들
 menu_music = None  # 메뉴 배경음악
 gameplay_music = None  # 게임플레이 배경음악
 current_music = None  # 현재 재생 중인 음악
+destruct_sound = None  # 건물 파괴 효과음
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, x_pressed, score, combo_score, game_time, combo_count, combo_images, buildings_destroyed, menu_music, gameplay_music, current_music
+    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, x_pressed, score, combo_score, game_time, combo_count, combo_images, buildings_destroyed, menu_music, gameplay_music, current_music, destruct_sound
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -75,8 +76,12 @@ def reset_world():
     menu_music = load_music('10.resource/menu.wav')
     gameplay_music = load_music('10.resource/gameplay.wav')  # 게임플레이 음악 파일이 있으면 활성화
 
+    # 효과음 로드
+    destruct_sound = load_wav('10.resource/destruct.wav')
+    destruct_sound.set_volume(50)  # 효과음 볼륨 설정
+
     # 메뉴 음악 재생 (무한 반복)
-    menu_music.set_volume(64)
+    menu_music.set_volume(50)
     menu_music.repeat_play()
     current_music = 'menu'
 
@@ -133,7 +138,7 @@ def manual_spawn_missile():
         print(f"[Manual] Spawned missile at x={x}, y={missile_manager.spawn_y}")
 
 def update_world(dt):
-    global building_manager, missile_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed, combo_count
+    global building_manager, missile_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed, combo_count, destruct_sound
     if current_screen == gamestart:
         game_time += dt  # 게임 시간 업데이트
 
@@ -173,6 +178,8 @@ def update_world(dt):
                 destroyed = b.hit()
                 if destroyed:
                     building_manager.destroy_building(b)
+                    if destruct_sound:
+                        destruct_sound.play()  # 건물 파괴 효과음 재생
                     score += combo_score  # 콤보 점수만큼 증가
                     combo_score += 10  # 다음 파괴 시 10점 더 증가
                     buildings_destroyed += 1  # 파괴된 건물 수 증가
@@ -187,6 +194,8 @@ def update_world(dt):
                 destroyed = b.hit()
                 if destroyed:
                     building_manager.destroy_building(b)
+                    if destruct_sound:
+                        destruct_sound.play()  # 건물 파괴 효과음 재생
                     score += combo_score  # 콤보 점수만큼 증가
                     combo_score += 10  # 다음 파괴 시 10점 더 증가
                     buildings_destroyed += 1  # 파괴된 건물 수 증가
