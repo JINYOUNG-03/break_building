@@ -8,19 +8,19 @@ class WeaponSelect:
 
         # 무기 데이터 (폴더 경로와 표시 이름)
         self.weapons = [
-            {'name': 'Basic Sword', 'folder': '3.animation/weapon animation/weapon', 'id': 'basic'},
-            {'name': 'Wooden Sword', 'folder': '3.animation/weapon animation/weapon', 'id': 'wooden'},
-            {'name': 'Ancient Sword', 'folder': '3.animation/weapon animation/weapon', 'id': 'ancient'},
-            {'name': 'Blood Sword', 'folder': '3.animation/weapon animation/weapon', 'id': 'blood'},
+            {'name': 'Basic', 'folder': '3.animation/weapon animation/weapon', 'id': 'basic', 'icon_image': '10.resource/1. Basic.png'},
+            {'name': 'Wooden', 'folder': '3.animation/weapon animation/weapon', 'id': 'wooden', 'icon_image': '10.resource/2. Wooden.png'},
+            {'name': 'Ancient', 'folder': '3.animation/weapon animation/weapon', 'id': 'ancient', 'icon_image': '10.resource/3. Ancient.png'},
+            {'name': 'Blood', 'folder': '3.animation/weapon animation/weapon', 'id': 'blood', 'icon_image': '10.resource/4. Blood.png'},
         ]
 
-        # 무기 아이콘 이미지 로드 (idle 이미지 사용)
+        # 무기 아이콘 이미지 로드 (10.resource 폴더에서)
         for weapon in self.weapons:
-            # 폴더 경로 끝에 슬래시 추가 (없으면)
-            folder = weapon['folder']
-            if not folder.endswith('/'):
-                folder += '/'
-            weapon['icon'] = load_image(folder + '1. Basic.png')
+            weapon['icon'] = None  # 기본값 설정
+            try:
+                weapon['icon'] = load_image(weapon['icon_image'])
+            except Exception as e:
+                print(f"Failed to load weapon icon: {weapon['icon_image']} - {e}")
 
         # 선택된 무기 인덱스
         self.selected_index = 0
@@ -88,11 +88,11 @@ class WeaponSelect:
 
             # 무기 아이콘
             if weapon['icon']:
-                icon_size = 80
+                icon_size = 90
                 weapon['icon'].draw(center_x, center_y + 30, icon_size, icon_size)
 
             # 무기 이름
-            text_width = len(weapon['name']) * 12
+            text_width = len(weapon['name']) * 10
             self.small_font.draw(center_x - text_width // 2, center_y - 50,
                                weapon['name'], (255, 255, 255))
 
