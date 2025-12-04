@@ -9,6 +9,7 @@ from weapon import Weapon
 from collision import CollisionManager, CollisionHandler
 from tutorial import Tutorial
 from missile import MissileManager
+from weapon_select import WeaponSelect
 from fragment import FragmentManager
 
 SCREEN_H=960
@@ -20,6 +21,7 @@ menu = None
 gamestart = None
 gameover = None
 tutorial = None
+weapon_select = None
 character = None
 weapon = None
 current_screen = None
@@ -34,21 +36,23 @@ score = 0  # 점수 추가
 combo_score = 100  # 콤보 점수 (연속 파괴 시 증가)
 game_time = 0  # 게임 시간 추가
 buildings_destroyed = 0  # 파괴된 건물 수 추가
-combo_count = 0  # 콤보 카운트 (시각적으로 표시할 숫자)
-combo_images = None  # 콤보 숫자 이미지들
-menu_music = None  # 메뉴 배경음악
-gameplay_music = None  # 게임플레이 배경음악
-current_music = None  # 현재 재생 중인 음악
-destruct_sound = None  # 건물 파괴 효과음
+selected_weapon_id = 'basic'  # 선택된 무기 ID 추가
+combo_count = 0  # 콤보 카운트 추가
+combo_images = []  # 콤보 이미지 리스트
+menu_music = None
+gameplay_music = None
+current_music = 'menu'
+destruct_sound = None
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, tutorial, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, fragment_manager, x_pressed, score, combo_score, game_time, combo_count, combo_images, buildings_destroyed, menu_music, gameplay_music, current_music, destruct_sound
+    global running, start_screen, menu, gamestart, gameover, tutorial, weapon_select, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, fragment_manager, x_pressed, score, combo_score, game_time, selected_weapon_id, combo_count, combo_images, menu_music, gameplay_music, current_music, destruct_sound
     running = True
     start_screen = Start()
     menu = GameMenu()
     gamestart = GameStart()
     gameover = GameOver()
     tutorial = Tutorial()
+    weapon_select = WeaponSelect()
     character = Character()
     weapon = Weapon(owner=character)  # 캐릭터를 owner로 전달
     collision_handler = CollisionHandler()  # 충돌 핸들러 초기화
@@ -59,7 +63,27 @@ def reset_world():
         spawn_y=950,
         speed=300.0
     )
-    fragment_manager = FragmentManager()  # 파편 매니저 초기화
+
+    # FragmentManager 초기화
+    fragment_manager = FragmentManager()
+
+    # 콤보 이미지 로드
+    combo_images = []
+    for i in range(10):
+        try:
+            img = load_image(f'10.resource/damage1_0{i}.png')
+            combo_images.append(img)
+        except:
+            combo_images.append(None)
+
+    # 음악 및 효과음 로드
+    try:
+        menu_music = load_music('10.resource/menu_music.mp3')
+        gameplay_music = load_music('10.resource/gameplay_music.mp3')
+        destruct_sound = load_wav('10.resource/destruct.wav')
+    except:
+        print("음악/효과음 파일을 찾을 수 없습니다.")
+
     current_screen = start_screen
     world = [current_screen]
     buildings = []
@@ -67,25 +91,13 @@ def reset_world():
     score = 0  # 점수 초기화
     combo_score = 100  # 콤보 점수 초기화
     game_time = 0  # 게임 시간 초기화
+    selected_weapon_id = 'basic'  # 선택된 무기 ID 초기화
     combo_count = 0  # 콤보 카운트 초기화
-    buildings_destroyed = 0  # 파괴된 건물 수 초기화
-
-    # 콤보 숫자 이미지 로드 (0~9)
-    # damage1_01.png = 0, damage1_02.png = 1, ..., damage1_10.png = 9
-    combo_images = [load_image(f'10.resource/damage1_0{i}.png') for i in range(1, 10)]
-    combo_images.append(load_image('10.resource/damage1_10.png'))  # 9번 이미지
-
-    # 배경음악 로드
-    menu_music = load_music('10.resource/menu.wav')
-    gameplay_music = load_music('10.resource/gameplay.wav')  # 게임플레이 음악 파일이 있으면 활성화
-
-    # 효과음 로드
-    destruct_sound = load_wav('10.resource/destruct.wav')
-    destruct_sound.set_volume(50)  # 효과음 볼륨 설정
 
     # 메뉴 음악 재생 (무한 반복)
-    menu_music.set_volume(50)
-    menu_music.repeat_play()
+    if menu_music:
+        menu_music.set_volume(50)
+        menu_music.repeat_play()
     current_music = 'menu'
 
     # BuildingManager 초기화
@@ -159,10 +171,6 @@ def update_world(dt):
     # missile_manager 업데이트
     if missile_manager:
         missile_manager.update(dt, current_screen == gamestart)
-
-    # fragment_manager 업데이트
-    if fragment_manager and current_screen == gamestart:
-        fragment_manager.update(dt)
 
     # 게임 플레이 중일 때만 충돌 검사 및 게임오버 체크
     if current_screen == gamestart and building_manager and collision_handler and weapon and character:
@@ -294,7 +302,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, character, weapon, x_pressed, combo_score, score, building_manager, missile_manager, game_time, buildings_destroyed, combo_count
+    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, weapon_select, character, weapon, x_pressed, combo_score, score, building_manager, missile_manager, game_time, buildings_destroyed, combo_count, selected_weapon_id
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -355,10 +363,7 @@ def handle_events():
                             building_manager.clear()
                         if missile_manager:
                             missile_manager.clear()
-                        if fragment_manager:
-                            fragment_manager.clear()
                         score = 0
-                        switch_music('gameplay')  # 게임플레이 음악으로 전환
                         combo_score = 100
                         game_time = 0
                         buildings_destroyed = 0
@@ -369,9 +374,32 @@ def handle_events():
                         current_screen = tutorial
                         world = [current_screen]
                         continue
+                    elif result == 'weapon':
+                        current_screen = weapon_select
+                        world = [current_screen]
+                        continue
                     elif result == 'quit':
                         running = False
                         continue
+
+            # weapon_select에서 클릭 처리
+            elif current_screen == weapon_select:
+                if hasattr(weapon_select, 'check_button_click'):
+                    action, value = weapon_select.check_button_click(mouse_x, mouse_y)
+                    if action == 'back':
+                        current_screen = menu
+                        world = [current_screen]
+                        continue
+                    elif action == 'confirm':
+                        selected_weapon_id = value
+                        print(f"Selected weapon: {selected_weapon_id}")
+                        # TODO: 나중에 weapon.change_weapon(selected_weapon_id) 구현
+                        current_screen = menu
+                        world = [current_screen]
+                        continue
+                    elif action == 'weapon':
+                        # 무기 선택만 하고 화면은 유지
+                        pass
 
             # tutorial에서 클릭 처리
             elif current_screen == tutorial:
@@ -393,12 +421,9 @@ def handle_events():
                             building_manager.clear()
                         if missile_manager:
                             missile_manager.clear()
-                        if fragment_manager:
-                            fragment_manager.clear()
                         score = 0
                         combo_score = 100
                         game_time = 0
                         buildings_destroyed = 0
                         combo_count = 0  # 콤보 카운트 초기화
-                        switch_music('menu')  # 메뉴 음악으로 전환
                         continue
