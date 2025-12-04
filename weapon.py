@@ -4,28 +4,30 @@ import shared_state
 
 
 class Weapon:
-    def __init__(self, owner=None, offset=(30, 0)):
-        # 상태별 이미지 로드
-        # idle: 기본 검 이미지 (정지)
-        self.idle_img = [load_image('10.resource/1. Basic.png')]
+    # 무기 타입별 이미지 파일 정의
+    WEAPON_DATA = {
+        'basic': {'idle': '1. Basic.png', 'name': 'Basic', 'folder': '1. Basic'},
+        'wooden': {'idle': '2. Wooden.png', 'name': 'Wooden', 'folder': '2. Wooden'},
+        'ancient': {'idle': '3. Ancient.png', 'name': 'Ancient', 'folder': '3. Ancient'},
+        'blood': {'idle': '4. Blood.png', 'name': 'Blood', 'folder': '4. Blood'},
+        'chicken': {'idle': '5. Chicken.png', 'name': 'Chicken', 'folder': '5. Chicken'},
+        'cutter': {'idle': '6. Cutter.png', 'name': 'Cutter', 'folder': '6. Cutter'},
+        'green': {'idle': '7. Green.png', 'name': 'Green', 'folder': '7. Green'},
+        'ice': {'idle': '8. Ice.png', 'name': 'Ice', 'folder': '8. Ice'},
+        'lightning': {'idle': '10. Lightning.png', 'name': 'Lightning', 'folder': '10. Lightning'},
+        'golden': {'idle': '11. Golden.png', 'name': 'Golden', 'folder': '11. Golden'},
+        'neptune': {'idle': '12. Neptune.png', 'name': 'Neptune', 'folder': '12. Neptune'},
+        'night': {'idle': '13. Night.png', 'name': 'Night', 'folder': '13. Night'},
+        'pink': {'idle': '14. Pink.png', 'name': 'Pink', 'folder': '14. Pink'},
+        'rosen': {'idle': '15. Rosen.png', 'name': 'Rosen', 'folder': '15. Rosen'},
+        'shark': {'idle': '16. Shark.png', 'name': 'Shark', 'folder': '16. Shark'},
+        'syringe': {'idle': '17. Syringe.png', 'name': 'Syringe', 'folder': '17. Syringe'},
+    }
 
-        # attack: 공격 애니메이션 프레임들
-        self.attack_left_to_right = [
-            load_image('10.resource/attack_re_02.png'),
-            load_image('10.resource/attack_re_03.png'),
-            load_image('10.resource/attack_re_04.png'),
-        ]
-
-        self.attack_right_to_left = [
-            load_image('10.resource/attack_re_07.png'),
-            load_image('10.resource/attack_re_08.png'),
-            load_image('10.resource/attack_re_09.png')
-        ]
-
-        self.defense_img = [load_image('10.resource/1. Basic.png')]
-
+    def __init__(self, owner=None, offset=(30, 0), weapon_type='basic'):
+        self.weapon_type = weapon_type
         self.owner = owner
-        self.idle_offset_x, self.idle_offset_y = offset  # idle 상태 오프셋
+        self.idle_offset_x, self.idle_offset_y = offset
 
         # idle 상태에서 작은 검 크기
         self.idle_w, self.idle_h = 24, 100
@@ -44,10 +46,6 @@ class Weapon:
 
         # 상태 관리
         self.state = 'idle'  # 'idle', 'attack', 'defense'
-        self.current_frames = self.idle_img
-        self.total_frames = len(self.current_frames)
-
-        # 애니메이션 재생 제어
         self.is_playing = True  # idle부터 시작
         self.loop = True  # idle은 루프, attack/defense는 한 번만 재생
 
@@ -58,6 +56,77 @@ class Weapon:
         self.has_hit = False
         self.attack_id = 0
         self.last_hit_attack_id = -1
+
+        # 무기 이미지 로드
+        self._load_weapon_images()
+
+        self.current_frames = self.idle_img
+        self.total_frames = len(self.current_frames)
+
+    def _load_weapon_images(self):
+        """현재 선택된 무기의 이미지 로드"""
+        weapon_data = self.WEAPON_DATA.get(self.weapon_type, self.WEAPON_DATA['basic'])
+
+        # idle 이미지 로드 (무기별로 다름)
+        try:
+            self.idle_img = [load_image(f'10.resource/{weapon_data["idle"]}')]
+            self.defense_img = [load_image(f'10.resource/{weapon_data["idle"]}')]
+        except:
+            print(f"Failed to load weapon: {weapon_data['idle']}, using basic")
+            self.idle_img = [load_image('10.resource/1. Basic.png')]
+            self.defense_img = [load_image('10.resource/1. Basic.png')]
+
+        # attack 애니메이션은 무기별 폴더에서 로드
+        animation_folder = f'3.animation/weapon animation/weapon/{weapon_data["folder"]}'
+        try:
+            self.attack_left_to_right = [
+                load_image(f'{animation_folder}/attack_re_02.png'),
+                load_image(f'{animation_folder}/attack_re_03.png'),
+                load_image(f'{animation_folder}/attack_re_04.png'),
+            ]
+
+            self.attack_right_to_left = [
+                load_image(f'{animation_folder}/attack_re_07.png'),
+                load_image(f'{animation_folder}/attack_re_08.png'),
+                load_image(f'{animation_folder}/attack_re_09.png')
+            ]
+            print(f"Loaded attack animation from: {animation_folder}")
+        except Exception as e:
+            print(f"Failed to load attack animation for {weapon_data['name']}: {e}")
+            # 기본 애니메이션으로 폴백
+            self.attack_left_to_right = [
+                load_image('10.resource/attack_re_02.png'),
+                load_image('10.resource/attack_re_03.png'),
+                load_image('10.resource/attack_re_04.png'),
+            ]
+
+            self.attack_right_to_left = [
+                load_image('10.resource/attack_re_07.png'),
+                load_image('10.resource/attack_re_08.png'),
+                load_image('10.resource/attack_re_09.png')
+            ]
+
+    def change_weapon(self, weapon_type):
+        """무기 타입 변경"""
+        if weapon_type not in self.WEAPON_DATA:
+            print(f"Unknown weapon type: {weapon_type}")
+            return
+
+        self.weapon_type = weapon_type
+        self._load_weapon_images()
+
+        # 현재 상태에 맞는 프레임으로 재설정
+        if self.state == 'idle':
+            self.current_frames = self.idle_img
+        elif self.state == 'defense':
+            self.current_frames = self.defense_img
+        elif self.state == 'attack':
+            self.current_frames = self.attack_left_to_right
+
+        self.total_frames = len(self.current_frames)
+        self.frame = min(self.frame, self.total_frames - 1)
+
+        print(f"Weapon changed to: {self.WEAPON_DATA[weapon_type]['name']}")
 
     def set_state(self, new_state):
         """상태 변경"""
@@ -93,6 +162,11 @@ class Weapon:
         # 공격을 시작할 때 새로운 attack_id를 부여하고 has_hit를 초기화
         self.attack_id += 1
         self.has_hit = False
+
+        # set_state 호출 전에 attack_direction을 먼저 동기화!
+        if self.owner and hasattr(self.owner, 'attack_direction'):
+            self.attack_direction = self.owner.attack_direction
+
         self.set_state('attack')
 
     def defend(self):
@@ -102,10 +176,11 @@ class Weapon:
     def update(self, dt):
         # owner(캐릭터)의 상태를 따라감
         if self.owner and hasattr(self.owner, 'state'):
-            # 캐릭터의 공격 방향 먼저 동기화
+            # 캐릭터의 공격 방향 먼저 동기화 (set_state 호출 전에!)
             if hasattr(self.owner, 'attack_direction'):
                 self.attack_direction = self.owner.attack_direction
 
+            # 상태가 바뀌면 set_state 호출 (이때 attack_direction이 이미 동기화되어 있음)
             if self.owner.state != self.state:
                 self.set_state(self.owner.state)
 
@@ -134,18 +209,18 @@ class Weapon:
 
             # 공격 상태일 때 캐릭터 프레임과 완벽하게 동기화
             if self.state == 'attack' and hasattr(self.owner, 'action_frame'):
-                # 캐릭터의 현재 방향에 따라 사용할 이미지 결정
+                # 방향에 따라 올바른 애니메이션 사용
                 if self.attack_direction == 'left_to_right':
-                    char_attack_img = self.owner.attack_left_to_right
+                    if self.current_frames != self.attack_left_to_right:
+                        self.current_frames = self.attack_left_to_right
+                        self.total_frames = len(self.current_frames)
                 else:
-                    char_attack_img = self.owner.attack_right_to_left
+                    if self.current_frames != self.attack_right_to_left:
+                        self.current_frames = self.attack_right_to_left
+                        self.total_frames = len(self.current_frames)
 
-                # 캐릭터의 프레임 진행도 계산 (0~1 사이)
-                char_total_frames = len(char_attack_img)
-                char_progress = self.owner.action_frame / char_total_frames
-
-                # 무기 프레임을 캐릭터 진행도에 맞춰 설정
-                self.frame = int(char_progress * self.total_frames)
+                # 캐릭터의 action_frame을 직접 무기 프레임으로 사용 (1:1 매칭)
+                self.frame = self.owner.action_frame
                 if self.frame >= self.total_frames:
                     self.frame = self.total_frames - 1
 
