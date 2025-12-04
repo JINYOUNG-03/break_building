@@ -8,18 +8,19 @@ class WeaponSelect:
 
         # 무기 데이터 (폴더 경로와 표시 이름)
         self.weapons = [
-            {'name': 'Basic Sword', 'folder': '10.resource/', 'id': 'basic'},
-            {'name': 'Fire Sword', 'folder': '10.resource/', 'id': 'fire'},
-            {'name': 'Ice Sword', 'folder': '10.resource/', 'id': 'ice'},
-            {'name': 'Lightning Sword', 'folder': '10.resource/', 'id': 'lightning'},
+            {'name': 'Basic Sword', 'folder': '3.animation/weapon animation/weapon', 'id': 'basic'},
+            {'name': 'Wooden Sword', 'folder': '3.animation/weapon animation/weapon', 'id': 'wooden'},
+            {'name': 'Ancient Sword', 'folder': '3.animation/weapon animation/weapon', 'id': 'ancient'},
+            {'name': 'Blood Sword', 'folder': '3.animation/weapon animation/weapon', 'id': 'blood'},
         ]
 
         # 무기 아이콘 이미지 로드 (idle 이미지 사용)
         for weapon in self.weapons:
-            try:
-                weapon['icon'] = load_image(weapon['folder'] + '1. Basic.png')
-            except:
-                weapon['icon'] = None
+            # 폴더 경로 끝에 슬래시 추가 (없으면)
+            folder = weapon['folder']
+            if not folder.endswith('/'):
+                folder += '/'
+            weapon['icon'] = load_image(folder + '1. Basic.png')
 
         # 선택된 무기 인덱스
         self.selected_index = 0
@@ -135,4 +136,3 @@ class WeaponSelect:
     def get_selected_weapon_id(self):
         """현재 선택된 무기 ID 반환"""
         return self.weapons[self.selected_index]['id']
-
