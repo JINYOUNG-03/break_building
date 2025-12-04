@@ -99,7 +99,7 @@ class FragmentManager:
         for fragment in self.fragments:
             fragment.update(dt)
 
-        # 수명이 다한 파편 제거
+        # 죽은 파편 제거
         self.fragments = [f for f in self.fragments if not f.is_dead()]
 
     def draw(self):
@@ -110,4 +110,3 @@ class FragmentManager:
     def clear(self):
         """모든 파편 제거"""
         self.fragments.clear()
-
