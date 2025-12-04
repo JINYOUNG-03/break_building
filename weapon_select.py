@@ -8,10 +8,26 @@ class WeaponSelect:
 
         # 무기 데이터 (폴더 경로와 표시 이름)
         self.weapons = [
+            # 첫 번째 줄
             {'name': 'Basic', 'folder': '3.animation/weapon animation/weapon', 'id': 'basic', 'icon_image': '10.resource/1. Basic.png'},
             {'name': 'Wooden', 'folder': '3.animation/weapon animation/weapon', 'id': 'wooden', 'icon_image': '10.resource/2. Wooden.png'},
             {'name': 'Ancient', 'folder': '3.animation/weapon animation/weapon', 'id': 'ancient', 'icon_image': '10.resource/3. Ancient.png'},
             {'name': 'Blood', 'folder': '3.animation/weapon animation/weapon', 'id': 'blood', 'icon_image': '10.resource/4. Blood.png'},
+            # 두 번째 줄
+            {'name': 'Chicken', 'folder': '3.animation/weapon animation/weapon', 'id': 'chicken', 'icon_image': '10.resource/5. Chicken.png'},
+            {'name': 'Cutter', 'folder': '3.animation/weapon animation/weapon', 'id': 'cutter', 'icon_image': '10.resource/6. Cutter.png'},
+            {'name': 'Green', 'folder': '3.animation/weapon animation/weapon', 'id': 'green', 'icon_image': '10.resource/7. Green.png'},
+            {'name': 'Ice', 'folder': '3.animation/weapon animation/weapon', 'id': 'ice', 'icon_image': '10.resource/8. Ice.png'},
+            # 세 번째 줄
+            {'name': 'Lightning', 'folder': '3.animation/weapon animation/weapon', 'id': 'lightning', 'icon_image': '10.resource/10. Lightning.png'},
+            {'name': 'Golden', 'folder': '3.animation/weapon animation/weapon', 'id': 'golden', 'icon_image': '10.resource/11. Golden.png'},
+            {'name': 'Neptune', 'folder': '3.animation/weapon animation/weapon', 'id': 'neptune', 'icon_image': '10.resource/12. Neptune.png'},
+            {'name': 'Night', 'folder': '3.animation/weapon animation/weapon', 'id': 'night', 'icon_image': '10.resource/13. Night.png'},
+            # 네 번째 줄
+            {'name': 'Pink', 'folder': '3.animation/weapon animation/weapon', 'id': 'pink', 'icon_image': '10.resource/14. Pink.png'},
+            {'name': 'Rosen', 'folder': '3.animation/weapon animation/weapon', 'id': 'rosen', 'icon_image': '10.resource/15. Rosen.png'},
+            {'name': 'Shark', 'folder': '3.animation/weapon animation/weapon', 'id': 'shark', 'icon_image': '10.resource/16. Shark.png'},
+            {'name': 'Syringe', 'folder': '3.animation/weapon animation/weapon', 'id': 'syringe', 'icon_image': '10.resource/17. Syringe.png'},
         ]
 
         # 무기 아이콘 이미지 로드 (10.resource 폴더에서)
@@ -25,15 +41,15 @@ class WeaponSelect:
         # 선택된 무기 인덱스
         self.selected_index = 0
 
-        # 버튼 영역 설정 (3x2 그리드)
-        self.button_width = 150
-        self.button_height = 180
-        self.grid_cols = 2
-        self.grid_rows = 2
-        self.start_x = 100
-        self.start_y = 700
-        self.spacing_x = 180
-        self.spacing_y = 220
+        # 버튼 영역 설정 (4행 4열 그리드로 변경)
+        self.button_width = 100
+        self.button_height = 140
+        self.grid_cols = 4  # 4열
+        self.grid_rows = 4  # 4행
+        self.start_x = 50
+        self.start_y = 820  # 시작 위치를 더 위로
+        self.spacing_x = 120  # 좁은 간격
+        self.spacing_y = 170  # 행 간격
 
         # Back 버튼
         self.back_button = {
@@ -88,12 +104,14 @@ class WeaponSelect:
 
             # 무기 아이콘
             if weapon['icon']:
-                icon_size = 90
-                weapon['icon'].draw(center_x, center_y + 30, icon_size, icon_size)
+                # 얇고 긴 칼 모양으로 표시 (폭 30, 높이 100)
+                icon_width = 30
+                icon_height = 100
+                weapon['icon'].draw(center_x, center_y + 30, icon_width, icon_height)
 
             # 무기 이름
             text_width = len(weapon['name']) * 10
-            self.small_font.draw(center_x - text_width // 2, center_y - 50,
+            self.small_font.draw(center_x - text_width // 2-15, center_y - 50,
                                weapon['name'], (255, 255, 255))
 
         # Back 버튼
