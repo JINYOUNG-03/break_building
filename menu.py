@@ -10,13 +10,15 @@ class GameMenu:
         # 버튼 아이콘 이미지 로드
         self.play_icon = load_image('10.resource/Direction_13.png')  # Game Start
         self.tutorial_icon = load_image('10.resource/Button_11.png')  # Tutorial
+        self.weapon_icon = load_image('10.resource/1. Basic.png')  # Weapon Select
         self.quit_icon = load_image('10.resource/Button_09.png')  # Quit
 
         # 버튼 영역 정의
         self.buttons = {
             'play': {'x1': 170, 'y1': 600, 'x2': 370, 'y2': 680, 'text': 'GAME START', 'icon': self.play_icon},
             'tutorial': {'x1': 170, 'y1': 480, 'x2': 370, 'y2': 560, 'text': 'TUTORIAL', 'icon': self.tutorial_icon},
-            'quit': {'x1': 170, 'y1': 360, 'x2': 370, 'y2': 440, 'text': 'QUIT', 'icon': self.quit_icon}
+            'weapon': {'x1': 170, 'y1': 360, 'x2': 370, 'y2': 440, 'text': 'SELECT WEAPON', 'icon': self.weapon_icon},
+            'quit': {'x1': 170, 'y1': 240, 'x2': 370, 'y2': 320, 'text': 'QUIT', 'icon': self.quit_icon}
         }
 
     def update(self):
