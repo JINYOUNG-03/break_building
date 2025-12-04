@@ -393,7 +393,9 @@ def handle_events():
                     elif action == 'confirm':
                         selected_weapon_id = value
                         print(f"Selected weapon: {selected_weapon_id}")
-                        # TODO: 나중에 weapon.change_weapon(selected_weapon_id) 구현
+                        # 무기 변경 적용
+                        if weapon:
+                            weapon.change_weapon(selected_weapon_id)
                         current_screen = menu
                         world = [current_screen]
                         continue
