@@ -35,8 +35,9 @@ class WeaponSelect:
             weapon['icon'] = None  # 기본값 설정
             try:
                 weapon['icon'] = load_image(weapon['icon_image'])
-            except Exception as e:
-                print(f"Failed to load weapon icon: {weapon['icon_image']} - {e}")
+            except Exception:
+                # 로드 실패하면 조용히 None으로 둡니다 (디버그 출력 제거)
+                weapon['icon'] = None
 
         # 선택된 무기 인덱스
         self.selected_index = 0
@@ -98,9 +99,6 @@ class WeaponSelect:
             if i == self.selected_index:
                 draw_rectangle(rect['x1'] - 5, rect['y1'] - 5,
                              rect['x2'] + 5, rect['y2'] + 5)
-
-            # 버튼 배경
-            draw_rectangle(rect['x1'], rect['y1'], rect['x2'], rect['y2'])
 
             # 무기 아이콘
             if weapon['icon']:

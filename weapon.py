@@ -71,8 +71,8 @@ class Weapon:
         try:
             self.idle_img = [load_image(f'10.resource/{weapon_data["idle"]}')]
             self.defense_img = [load_image(f'10.resource/{weapon_data["idle"]}')]
-        except:
-            print(f"Failed to load weapon: {weapon_data['idle']}, using basic")
+        except Exception:
+            # 로드 실패 시 기본 이미지로 폴백 (디버그 출력 제거)
             self.idle_img = [load_image('10.resource/1. Basic.png')]
             self.defense_img = [load_image('10.resource/1. Basic.png')]
 
@@ -90,10 +90,8 @@ class Weapon:
                 load_image(f'{animation_folder}/attack_re_08.png'),
                 load_image(f'{animation_folder}/attack_re_09.png')
             ]
-            print(f"Loaded attack animation from: {animation_folder}")
-        except Exception as e:
-            print(f"Failed to load attack animation for {weapon_data['name']}: {e}")
-            # 기본 애니메이션으로 폴백
+        except Exception:
+            # 애니메이션 로드 실패 시에도 기본 애니메이션으로 폴백 (디버그 출력 제거)
             self.attack_left_to_right = [
                 load_image('10.resource/attack_re_02.png'),
                 load_image('10.resource/attack_re_03.png'),
@@ -109,7 +107,7 @@ class Weapon:
     def change_weapon(self, weapon_type):
         """무기 타입 변경"""
         if weapon_type not in self.WEAPON_DATA:
-            print(f"Unknown weapon type: {weapon_type}")
+            # 알 수 없는 무기 타입일 경우 조용히 무시
             return
 
         self.weapon_type = weapon_type
@@ -125,8 +123,6 @@ class Weapon:
 
         self.total_frames = len(self.current_frames)
         self.frame = min(self.frame, self.total_frames - 1)
-
-        print(f"Weapon changed to: {self.WEAPON_DATA[weapon_type]['name']}")
 
     def set_state(self, new_state):
         """상태 변경"""
@@ -261,6 +257,7 @@ class Weapon:
             half_h = self.idle_h / 2
             return (self.x - half_w, self.y - half_h,
                     self.x + half_w, self.y + half_h)
+
 
 
     def draw(self):

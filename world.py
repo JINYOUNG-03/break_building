@@ -67,22 +67,23 @@ def reset_world():
     # FragmentManager 초기화
     fragment_manager = FragmentManager()
 
-    # 콤보 이미지 로드
+    # 콤보 이미지 로드 (에러 조용히 처리)
+    # damage1_01.png ~ damage1_10.png 파일에 맞게 로드 (인덱스 0-9에 1-10 매핑)
     combo_images = []
     for i in range(10):
         try:
-            img = load_image(f'10.resource/damage1_0{i}.png')
+            img = load_image(f'10.resource/damage1_{i+1:02d}.png')
             combo_images.append(img)
-        except:
+        except Exception:
             combo_images.append(None)
 
-    # 음악 및 효과음 로드
+    # 음악 및 효과음 로드 (에러 조용히 처리)
     try:
-        menu_music = load_music('10.resource/menu_music.mp3')
-        gameplay_music = load_music('10.resource/gameplay_music.mp3')
+        menu_music = load_music('10.resource/menu.wav')
+        gameplay_music = load_music('10.resource/gameplay.wav')
         destruct_sound = load_wav('10.resource/destruct.wav')
-    except:
-        print("음악/효과음 파일을 찾을 수 없습니다.")
+    except Exception:
+        pass
 
     current_screen = start_screen
     world = [current_screen]
@@ -150,7 +151,6 @@ def manual_spawn_missile():
         from missile import Missile
         m = Missile(x, missile_manager.spawn_y, missile_manager.speed)
         missile_manager.missiles.append(m)
-        print(f"[Manual] Spawned missile at x={x}, y={missile_manager.spawn_y}")
 
 def update_world(dt):
     global building_manager, missile_manager, fragment_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed, combo_count, destruct_sound
@@ -281,7 +281,8 @@ def render_world():
                 # 한 자리수: 해당 숫자 이미지 하나만 표시
                 # combo_count 1 -> 인덱스 1 (damage1_02.png)
                 combo_img = combo_images[display_combo]
-                combo_img.draw(character.x + 60, character.y + 80)
+                if combo_img:
+                    combo_img.draw(character.x + 60, character.y + 80)
             else:
                 # 두 자리수: 십의 자리와 일의 자리를 각각 표시
                 tens_digit = display_combo // 10
@@ -289,11 +290,13 @@ def render_world():
 
                 # 십의 자리 숫자
                 tens_img = combo_images[tens_digit]
-                tens_img.draw(character.x + 40, character.y + 80)
+                if tens_img:
+                    tens_img.draw(character.x + 40, character.y + 80)
 
                 # 일의 자리 숫자
                 ones_img = combo_images[ones_digit]
-                ones_img.draw(character.x + 80, character.y + 80)
+                if ones_img:
+                    ones_img.draw(character.x + 80, character.y + 80)
 
     # 게임오버 화면일 때 최종 점수 및 파괴한 건물 수 표시
     if current_screen == gameover:
@@ -396,7 +399,6 @@ def handle_events():
                         continue
                     elif action == 'confirm':
                         selected_weapon_id = value
-                        print(f"Selected weapon: {selected_weapon_id}")
                         # 무기 변경 적용
                         if weapon:
                             weapon.change_weapon(selected_weapon_id)
