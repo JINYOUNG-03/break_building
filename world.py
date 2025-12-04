@@ -172,6 +172,10 @@ def update_world(dt):
     if missile_manager:
         missile_manager.update(dt, current_screen == gamestart)
 
+    # fragment_manager 업데이트 (파편 효과)
+    if fragment_manager:
+        fragment_manager.update(dt)
+
     # 게임 플레이 중일 때만 충돌 검사 및 게임오버 체크
     if current_screen == gamestart and building_manager and collision_handler and weapon and character:
         # 건물이 y좌표 110 이하로 내려가면 게임오버
