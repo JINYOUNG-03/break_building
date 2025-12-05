@@ -376,6 +376,7 @@ def handle_events():
                         buildings_destroyed = 0
                         combo_count = 0  # 콤보 카운트 초기화
                         start_all_buildings()
+                        switch_music('gameplay')  # 게임플레이 음악으로 전환
                         continue
                     elif result == 'tutorial':
                         current_screen = tutorial
@@ -434,4 +435,5 @@ def handle_events():
                         game_time = 0
                         buildings_destroyed = 0
                         combo_count = 0  # 콤보 카운트 초기화
+                        switch_music('menu')  # 메뉴 음악으로 전환
                         continue
