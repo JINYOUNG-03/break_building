@@ -140,8 +140,11 @@ class Weapon:
             # 공격 상태가 끝난 뒤에는 히트 플래그를 초기화
             self.has_hit = False
         elif new_state == 'attack':
-            # 현재 공격 방향에 따라 프레임 선택
-            self.current_frames = self.attack_left_to_right #여기 절대로 수정하면 안됨 여기 수정하면 애니메이션 오류남
+            # 현재 공격 방향에 따라 올바른 애니메이션 선택
+            if self.attack_direction == 'left_to_right':
+                self.current_frames = self.attack_left_to_right
+            else:
+                self.current_frames = self.attack_right_to_left
             self.is_playing = True
             self.loop = False
             # 공격 시작 시에는 아직 히트하지 않았음
@@ -172,11 +175,8 @@ class Weapon:
     def update(self, dt):
         # owner(캐릭터)의 상태를 따라감
         if self.owner and hasattr(self.owner, 'state'):
-            # 캐릭터의 공격 방향 먼저 동기화 (set_state 호출 전에!)
-            if hasattr(self.owner, 'attack_direction'):
-                self.attack_direction = self.owner.attack_direction
-
-            # 상태가 바뀌면 set_state 호출 (이때 attack_direction이 이미 동기화되어 있음)
+            # 상태가 바뀌면 set_state 호출
+            # (방향 동기화는 attack() 함수에서 이미 했으므로 여기서는 하지 않음)
             if self.owner.state != self.state:
                 self.set_state(self.owner.state)
 
@@ -205,15 +205,6 @@ class Weapon:
 
             # 공격 상태일 때 캐릭터 프레임과 완벽하게 동기화
             if self.state == 'attack' and hasattr(self.owner, 'action_frame'):
-                # 방향에 따라 올바른 애니메이션 사용
-                if self.attack_direction == 'left_to_right':
-                    if self.current_frames != self.attack_left_to_right:
-                        self.current_frames = self.attack_left_to_right
-                        self.total_frames = len(self.current_frames)
-                else:
-                    if self.current_frames != self.attack_right_to_left:
-                        self.current_frames = self.attack_right_to_left
-                        self.total_frames = len(self.current_frames)
 
                 # 캐릭터의 action_frame을 직접 무기 프레임으로 사용 (1:1 매칭)
                 self.frame = self.owner.action_frame
@@ -267,11 +258,8 @@ class Weapon:
             # 상태에 따라 다른 크기로 그리기
             if self.state == 'attack':
                 # attack만 큰 애니메이션 이미지
-                # 오른쪽→왼쪽 공격 시 좌우 반전
-                if self.attack_direction == 'right_to_left':
-                    img.composite_draw(0, 'h', self.x, self.y, self.anim_w, self.anim_h)
-                else:
-                    img.draw(self.x, self.y, self.anim_w, self.anim_h)
+                # current_frames가 이미 올바른 방향의 애니메이션이므로 그대로 그림
+                img.draw(self.x, self.y, self.anim_w, self.anim_h)
             elif self.state =='defense':
                 import math
                 img.composite_draw(math.pi / 2, '', self.x, self.y-20, 24, 100)

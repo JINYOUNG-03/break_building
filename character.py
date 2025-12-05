@@ -68,6 +68,12 @@ class Character:
     def attack(self):
         """공격 상태로 전환"""
         if self.state not in ['attack', 'defense']:
+            # 공격 방향을 미리 전환 (와이퍼처럼)
+            if self.attack_direction == 'left_to_right':
+                self.attack_direction = 'right_to_left'
+            else:
+                self.attack_direction = 'left_to_right'
+
             self.state = 'attack'
             self.action_frame = 0
             self.action_acc = 0.0
@@ -101,11 +107,6 @@ class Character:
                 self.action_frame += 1
                 self.action_acc -= self.action_frame_time
                 if self.action_frame >= len(current_attack_img):
-                    # 공격 방향 전환 (와이퍼처럼)
-                    if self.attack_direction == 'left_to_right':
-                        self.attack_direction = 'right_to_left'
-                    else:
-                        self.attack_direction = 'left_to_right'
 
                     # 공격 애니메이션 끝나면 idle로
                     self.state = 'idle'
