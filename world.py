@@ -11,6 +11,7 @@ from tutorial import Tutorial
 from missile import MissileManager
 from weapon_select import WeaponSelect
 from fragment import FragmentManager
+from skill import Skill
 
 SCREEN_H=960
 SCREEN_W=540
@@ -24,6 +25,7 @@ tutorial = None
 weapon_select = None
 character = None
 weapon = None
+skill = None
 current_screen = None
 world = []
 buildings = []
@@ -45,7 +47,7 @@ current_music = 'menu'
 destruct_sound = None
 
 def reset_world():
-    global running, start_screen, menu, gamestart, gameover, tutorial, weapon_select, character, weapon, current_screen, world, buildings, building_manager, collision_handler, missile_manager, fragment_manager, x_pressed, score, combo_score, game_time, selected_weapon_id, combo_count, combo_images, menu_music, gameplay_music, current_music, destruct_sound
+    global running, start_screen, menu, gamestart, gameover, tutorial, weapon_select, character, weapon, skill, current_screen, world, buildings, building_manager, collision_handler, missile_manager, fragment_manager, x_pressed, score, combo_score, game_time, selected_weapon_id, combo_count, combo_images, menu_music, gameplay_music, current_music, destruct_sound
     running = True
     start_screen = Start()
     menu = GameMenu()
@@ -55,6 +57,7 @@ def reset_world():
     weapon_select = WeaponSelect()
     character = Character()
     weapon = Weapon(owner=character)  # 캐릭터를 owner로 전달
+    skill = Skill()  # 스킬 초기화
     collision_handler = CollisionHandler()  # 충돌 핸들러 초기화
     missile_manager = MissileManager(
         spawn_interval=6.0,
@@ -153,7 +156,7 @@ def manual_spawn_missile():
         missile_manager.missiles.append(m)
 
 def update_world(dt):
-    global building_manager, missile_manager, fragment_manager, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed, combo_count, destruct_sound
+    global building_manager, missile_manager, fragment_manager, skill, current_screen, gamestart, gameover, world, weapon, character, collision_handler, x_pressed, score, combo_score, game_time, buildings_destroyed, combo_count, destruct_sound
     if current_screen == gamestart:
         game_time += dt  # 게임 시간 업데이트
 
@@ -163,6 +166,13 @@ def update_world(dt):
             obj.update(dt)
         except TypeError:
             obj.update()
+
+    # skill 업데이트
+    if skill:
+        skill.update(dt)
+        # 스킬이 종료되면 캐릭터 다시 표시
+        if not skill.is_active and character.using_skill:
+            character.using_skill = False
 
     # building_manager 업데이트
     if building_manager:
@@ -233,6 +243,22 @@ def update_world(dt):
             # 전체 빌딩 리스트와 X키 상태, dt를 전달
             collision_handler.handle_character_building_collision(character, building, building_manager.buildings, x_pressed, dt)
 
+        # 스킬-건물 충돌 검사
+        if skill and skill.tailshot_active:
+            skill_collisions = CollisionManager.check_skill_buildings(skill, building_manager.buildings)
+            # TailShot에 닿은 건물들을 모두 파괴
+            for building in skill_collisions:
+                # 파편 생성
+                if fragment_manager:
+                    fragment_manager.create_fragments(building.x, building.y, count=5)
+                building_manager.destroy_building(building)
+                if destruct_sound:
+                    destruct_sound.play()  # 건물 파괴 효과음 재생
+                score += combo_score  # 콤보 점수만큼 증가
+                combo_score += 10  # 다음 파괴 시 10점 더 증가
+                buildings_destroyed += 1  # 파괴된 건물 수 증가
+                combo_count += 1  # 콤보 카운트 증가
+
         # 미사일-캐릭터 충돌 검사
         if missile_manager:
             collided_missiles = CollisionManager.check_missiles_character(missile_manager.missiles, character)
@@ -246,7 +272,7 @@ def update_world(dt):
                 return
 
 def render_world():
-    global building_manager, missile_manager, fragment_manager, world, score, current_screen, gamestart, gameover, game_time, combo_count, combo_images
+    global building_manager, missile_manager, fragment_manager, skill, world, score, current_screen, gamestart, gameover, game_time, combo_count, combo_images
     clear_canvas()
     # 배경을 먼저 그림
     for obj in world:
@@ -263,6 +289,9 @@ def render_world():
     if fragment_manager and current_screen == gamestart:
         fragment_manager.draw()
 
+    # 스킬 그리기 (캐릭터보다 위에)
+    if skill and current_screen == gamestart:
+        skill.draw()
 
     # 게임 플레이 중일 때만 점수 및 시간 표시
     if current_screen == gamestart:
@@ -271,6 +300,14 @@ def render_world():
         font.draw(20, SCREEN_H - 40, f'SCORE: {score}', (255, 255, 255))
         # 게임 시간 텍스트 표시 (오른쪽 상단)
         font.draw(SCREEN_W - 200, SCREEN_H - 40, f'TIME: {int(game_time)}s', (255, 255, 255))
+
+        # 스킬 쿨타임 표시 (왼쪽 하단)
+        if skill:
+            remaining = skill.get_remaining_cooldown()
+            if remaining > 0:
+                font.draw(20, 80, f'SKILL: {remaining:.1f}s', (255, 100, 100))
+            else:
+                font.draw(20, 80, f'SKILL: READY', (100, 255, 100))
 
         # 콤보 카운트 이미지 표시 (캐릭터 오른쪽 위)
         if combo_count > 0 and combo_images and character:
@@ -309,7 +346,7 @@ def render_world():
 
 def handle_events():
     """입력 처리: ESC/QUIT은 종료, 화면 전환(예: m/s/r), gamestart에서만 캐릭터 조작, 'b'는 빌딩 낙하 트리거."""
-    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, weapon_select, character, weapon, x_pressed, combo_score, score, building_manager, missile_manager, game_time, buildings_destroyed, combo_count, selected_weapon_id
+    global running, current_screen, world, start_screen, menu, gamestart, gameover, tutorial, weapon_select, character, weapon, skill, x_pressed, combo_score, score, building_manager, missile_manager, game_time, buildings_destroyed, combo_count, selected_weapon_id
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -339,6 +376,11 @@ def handle_events():
                     weapon.defend()
                     combo_score = 100  # 방어 상태로 전환 시 콤보 점수 리셋
                     combo_count = 0  # 방어 시 콤보 카운트 0으로 초기화
+                elif event.key == SDLK_c:
+                    # C키로 스킬 사용
+                    if skill and skill.can_use():
+                        skill.activate(character.x, character.y)
+                        character.using_skill = True
                 continue
             # 다른 화면에서 처리할 키가 있으면 여기 추가
         if event.type == SDL_KEYUP:
@@ -430,6 +472,10 @@ def handle_events():
                             building_manager.clear()
                         if missile_manager:
                             missile_manager.clear()
+                        if skill:
+                            skill = Skill()  # 스킬 초기화
+                        if character:
+                            character.using_skill = False  # 캐릭터 스킬 사용 상태 초기화
                         score = 0
                         combo_score = 100
                         game_time = 0

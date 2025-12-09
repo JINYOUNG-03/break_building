@@ -40,13 +40,13 @@ class GameOver:
         btn = self.restart_button
         center_x = (btn['x1'] + btn['x2']) // 2
         center_y = (btn['y1'] + btn['y2']) // 2
-
+        
         # 아이콘 이미지 그리기 (왼쪽에 배치)
         icon_size = 70
         icon_x = btn['x1'] + 50
         if 'icon' in btn and btn['icon']:
             btn['icon'].draw(icon_x, center_y, icon_size, icon_size)
-
+        
         # 텍스트 (아이콘 오른쪽에 표시)
         text_x = icon_x + 50
         self.font.draw(text_x, center_y - 10, btn['text'], (255, 255, 255))
@@ -57,12 +57,12 @@ class GameOver:
         반환값: 'restart' 또는 None
         """
         btn = self.restart_button
-
+        
         # 전체 버튼 영역 체크 (아이콘 + 텍스트 포함)
         if (btn['x1'] <= mouse_x <= btn['x2'] and
             btn['y1'] <= mouse_y <= btn['y2']):
             return 'restart'
-
+        
         return None
 
 
