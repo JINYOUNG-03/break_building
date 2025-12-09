@@ -46,6 +46,9 @@ class Character:
             load_image('10.resource/Char1_1_attack_01.png')
         ]
 
+        # 스킬 사용 중 플래그
+        self.using_skill = False
+
     def set_scale(self, scale: float):
         self.scale = max(0.1, float(scale))
 
@@ -130,6 +133,10 @@ class Character:
                 self.anim_acc -= self.frame_time
 
     def draw(self):
+        # 스킬 사용 중일 때는 캐릭터를 그리지 않음
+        if self.using_skill:
+            return
+
         if self.state == 'attack':
             # 방향에 따라 다른 이미지 리스트 사용
             if self.attack_direction == 'left_to_right':
