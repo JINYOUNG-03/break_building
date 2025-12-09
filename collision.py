@@ -88,6 +88,26 @@ class CollisionManager:
                 collided.append(m)
         return collided
 
+    @staticmethod
+    def check_skill_buildings(skill, buildings):
+        """
+        스킬 TailShot과 여러 건물들의 충돌 검사
+        충돌한 건물 리스트 반환
+        """
+        if not skill or not skill.tailshot_active:
+            return []
+
+        tailshot_bb = skill.get_tailshot_bb()
+        if not tailshot_bb:
+            return []
+
+        collided_buildings = []
+        for building in buildings:
+            building_bb = building.get_bb()
+            if CollisionManager.check_collision(tailshot_bb, building_bb):
+                collided_buildings.append(building)
+        return collided_buildings
+
 
 class CollisionHandler:
     """충돌 발생 시 처리를 담당하는 클래스"""
