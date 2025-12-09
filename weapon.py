@@ -252,6 +252,10 @@ class Weapon:
 
 
     def draw(self):
+        # 캐릭터가 스킬 사용 중이면 무기도 그리지 않음
+        if self.owner and hasattr(self.owner, 'using_skill') and self.owner.using_skill:
+            return
+
         if self.total_frames > 0:
             img = self.current_frames[self.frame]
 
