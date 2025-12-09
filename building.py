@@ -41,15 +41,6 @@ class Building:
         # 이미지 그리기
         if self.image:
             self.image.draw(draw_x, draw_y, self.w, self.h)
-        else:
-            # 이미지 없을 때 빨간 사각형으로 표시
-            hw = self.w / 2
-            hh = self.h / 2
-            draw_rectangle(draw_x - hw, draw_y - hh, draw_x + hw, draw_y + hh)
-
-        # 바운딩 박스 그리기 (디버그용)
-        x1, y1, x2, y2 = self.get_bb()
-        draw_rectangle(x1, y1, x2, y2)
 
     def is_offscreen(self, screen_bottom=0):
         return (self.y + self.h / 2) < screen_bottom

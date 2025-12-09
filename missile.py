@@ -46,15 +46,6 @@ class Missile:
         if self.has_frame_images:
             img = self.frames[self.frame_index]
             img.draw(draw_x, draw_y, self.w, self.h)
-        else:
-            # 이미지가 없을 때 폴백 (사각형)
-            half_w = self.w / 2
-            half_h = self.h / 2
-            draw_rectangle(draw_x - half_w, draw_y - half_h, draw_x + half_w, draw_y + half_h)
-
-        # 바운딩 박스 그리기(디버그)
-        x1, y1, x2, y2 = self.get_bb()
-        draw_rectangle(x1, y1, x2, y2)
 
     def get_bb(self):
         half_w = self.w / 2
