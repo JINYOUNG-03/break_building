@@ -35,6 +35,10 @@ class Skill:
         self.cooldown = 10.0  # 10초
         self.last_used_time = -100.0  # 처음에는 사용 가능하도록
 
+        # 무적 시간
+        self.invincibility_duration = 0.5  # 스킬 종료 후 0.5초 무적
+        self.invincibility_end_time = 0.0
+
         # 캐릭터 위치
         self.char_x = 0
         self.char_y = 0
@@ -95,6 +99,16 @@ class Skill:
             if self.tailshot_y > 960:
                 self.is_active = False
                 self.tailshot_active = False
+                # 스킬 종료 시 무적 시간 시작
+                self.invincibility_end_time = time.time() + self.invincibility_duration
+
+    def is_invincible(self):
+        """현재 무적 상태인지 확인 (스킬 시전 중 또는 시전 직후)"""
+        # 스킬 시전 중이거나 무적 시간이 남아있으면 무적
+        if self.is_active:
+            return True
+        current_time = time.time()
+        return current_time < self.invincibility_end_time
 
     def draw(self):
         """스킬 그리기"""
