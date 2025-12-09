@@ -259,17 +259,20 @@ def update_world(dt):
                 buildings_destroyed += 1  # 파괴된 건물 수 증가
                 combo_count += 1  # 콤보 카운트 증가
 
-        # 미사일-캐릭터 충돌 검사
+        # 미사일-캐릭터 충돌 검사 (무적 상태가 아닐 때만)
         if missile_manager:
-            collided_missiles = CollisionManager.check_missiles_character(missile_manager.missiles, character)
-            if collided_missiles:
-                try:
-                    missile_manager.remove(collided_missiles[0])
-                except Exception:
-                    pass
-                current_screen = gameover
-                world = [current_screen]
-                return
+            # 스킬 사용 중이거나 무적 시간이면 충돌 무시
+            is_invincible = skill and skill.is_invincible()
+            if not is_invincible:
+                collided_missiles = CollisionManager.check_missiles_character(missile_manager.missiles, character)
+                if collided_missiles:
+                    try:
+                        missile_manager.remove(collided_missiles[0])
+                    except Exception:
+                        pass
+                    current_screen = gameover
+                    world = [current_screen]
+                    return
 
 def render_world():
     global building_manager, missile_manager, fragment_manager, skill, world, score, current_screen, gamestart, gameover, game_time, combo_count, combo_images
@@ -308,6 +311,10 @@ def render_world():
                 font.draw(20, 80, f'SKILL: {remaining:.1f}s', (255, 100, 100))
             else:
                 font.draw(20, 80, f'SKILL: READY', (100, 255, 100))
+
+            # 무적 상태 표시
+            if skill.is_invincible() and not skill.is_active:
+                font.draw(20, 50, f'INVINCIBLE!', (255, 255, 100))
 
         # 콤보 카운트 이미지 표시 (캐릭터 오른쪽 위)
         if combo_count > 0 and combo_images and character:
